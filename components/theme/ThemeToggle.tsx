@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { useTheme } from './ThemeProvider';
+import { useTheme } from "./ThemeProvider";
 
 export function ThemeToggle() {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
 
   return (
     <div className="flex items-center gap-2">
       {/* Botões de tema */}
       <div className="flex items-center bg-white/10 rounded-lg p-1">
         <button
-          onClick={() => setTheme('light')}
+          onClick={() => setTheme("light")}
           className={`p-2 rounded-md transition-colors ${
-            theme === 'light'
-              ? 'bg-white/20 text-white'
-              : 'text-white/60 hover:text-white hover:bg-white/10'
+            theme === "light"
+              ? "bg-white/20 text-white"
+              : "text-white/60 hover:text-white hover:bg-white/10"
           }`}
           title="Tema claro"
           aria-label="Tema claro"
@@ -31,11 +31,11 @@ export function ThemeToggle() {
         </button>
 
         <button
-          onClick={() => setTheme('dark')}
+          onClick={() => setTheme("dark")}
           className={`p-2 rounded-md transition-colors ${
-            theme === 'dark'
-              ? 'bg-white/20 text-white'
-              : 'text-white/60 hover:text-white hover:bg-white/10'
+            theme === "dark"
+              ? "bg-white/20 text-white"
+              : "text-white/60 hover:text-white hover:bg-white/10"
           }`}
           title="Tema escuro"
           aria-label="Tema escuro"
@@ -56,11 +56,11 @@ export function ThemeToggle() {
         </button>
 
         <button
-          onClick={() => setTheme('system')}
+          onClick={() => setTheme("system")}
           className={`p-2 rounded-md transition-colors ${
-            theme === 'system'
-              ? 'bg-white/20 text-white'
-              : 'text-white/60 hover:text-white hover:bg-white/10'
+            theme === "system"
+              ? "bg-white/20 text-white"
+              : "text-white/60 hover:text-white hover:bg-white/10"
           }`}
           title="Tema do sistema"
           aria-label="Tema do sistema"

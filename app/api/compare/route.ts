@@ -12,7 +12,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { v4 as uuidv4 } from 'crypto';
+import { randomUUID } from 'crypto';
 import { getOrderForm, extractOrderFormId } from '@/lib/vtex/orderForm';
 import { getBudget } from '@/lib/vtex/masterData';
 import { normalizeOrderForm, normalizeBudget } from '@/lib/compare/normalizers';
@@ -37,8 +37,7 @@ const CompareRequestSchema = z.object({
  * Gera ID único para rastreamento da requisição
  */
 function generateRequestId(): string {
-  // Usa timestamp + random para ID único
-  return `req_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  return `req_${randomUUID()}`;
 }
 
 /**
@@ -53,7 +52,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Compariso
   try {
     // 1. Parse e validação do body
     const body = await request.json().catch(() => ({}));
-    
+
     const validation = CompareRequestSchema.safeParse(body);
     if (!validation.success) {
       console.log(`[${requestId}] Erro de validação:`, validation.error.errors);
@@ -88,7 +87,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Compariso
 
     // 3. Buscar dados em paralelo
     console.log(`[${requestId}] Buscando OrderForm e Budget...`);
-    
+
     const [orderFormResult, budgetResult] = await Promise.allSettled([
       getOrderForm(orderFormId),
       getBudget(idBudget),
@@ -100,8 +99,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<Compariso
       return NextResponse.json<ApiError>(
         {
           error: 'ORDERFORM_NOT_FOUND',
-          message: orderFormResult.reason instanceof Error 
-            ? orderFormResult.reason.message 
+          message: orderFormResult.reason instanceof Error
+            ? orderFormResult.reason.message
             : 'Não foi possível buscar o carrinho',
           requestId,
         },
@@ -115,8 +114,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<Compariso
       return NextResponse.json<ApiError>(
         {
           error: 'BUDGET_NOT_FOUND',
-          message: budgetResult.reason instanceof Error 
-            ? budgetResult.reason.message 
+          message: budgetResult.reason instanceof Error
+            ? budgetResult.reason.message
             : 'Não foi possível buscar o orçamento',
           requestId,
         },
@@ -164,7 +163,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Compariso
 
   } catch (error) {
     console.error(`[${requestId}] Erro inesperado:`, error);
-    
+
     return NextResponse.json<ApiError>(
       {
         error: 'INTERNAL_ERROR',
