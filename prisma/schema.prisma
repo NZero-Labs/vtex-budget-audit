@@ -5,9 +5,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Datasource sem URL - Prisma 7 usa accelerateUrl no PrismaClient
+// Datasource com URL para geração do client
+// Runtime usa accelerateUrl no PrismaClient
 datasource db {
   provider = "postgresql"
+  url      = env("BU_PRISMA_DATABASE_URL")
 }
 
 /// Tabela de usuários para autenticação

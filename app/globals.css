@@ -8,30 +8,30 @@
  */
 
 /* Importar fonte Lato do Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700;900&display=swap");
 
 :root {
   /* Primary Colors */
   --green-main: #00953b;
   --green-light: #76bc21;
   --green-lime: #c1d116;
-  
+
   /* Secondary Colors */
   --brand-black: #3c3c3b;
   --grey-dark: #575756;
   --grey-medium: #9d9c9c;
-  
+
   /* Complementary */
   --brand-yellow: #ffc000;
   --brand-cyan: #1c9bd8;
   --brand-blue: #2e75b6;
-  
+
   /* Status */
   --status-success: #00953b;
   --status-warning: #ffc000;
   --status-error: #d32f2f;
   --status-info: #1c9bd8;
-  
+
   /* Dashboard - Light Mode */
   --background: #ffffff;
   --foreground: #3c3c3b;
@@ -39,7 +39,7 @@
   --row-hover: #f1f7f3;
   --border-color: #e5e5e5;
   --input-bg: #ffffff;
-  
+
   /* UI Tokens */
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -64,7 +64,7 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: 'Lato', system-ui, sans-serif;
+  font-family: "Lato", system-ui, sans-serif;
   font-weight: 400;
   font-size: 16px;
   line-height: 1.6;
@@ -73,18 +73,31 @@ body {
 }
 
 /* Typography - usando Lato como fonte principal para dados/dashboards */
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Lato', system-ui, sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Lato", system-ui, sans-serif;
   font-weight: 700;
   color: var(--brand-black);
   line-height: 1.3;
   letter-spacing: -0.01em;
 }
 
-h1 { font-size: 2rem; }
-h2 { font-size: 1.5rem; }
-h3 { font-size: 1.25rem; }
-h4 { font-size: 1.125rem; }
+h1 {
+  font-size: 2rem;
+}
+h2 {
+  font-size: 1.5rem;
+}
+h3 {
+  font-size: 1.25rem;
+}
+h4 {
+  font-size: 1.125rem;
+}
 
 /* Parágrafos e texto corrido */
 p {
@@ -98,7 +111,8 @@ p {
 }
 
 /* Labels e legendas */
-label, .label {
+label,
+.label {
   font-weight: 500;
   color: var(--brand-black);
   font-size: 0.875rem;
@@ -202,11 +216,14 @@ label, .label {
 
 /* Corporate Gradient */
 .gradient-corporate {
-  background: linear-gradient(to right, var(--green-main), var(--green-lime));
+  background: linear-gradient(to left, var(--green-main), var(--green-lime));
 }
 
 /* Focus states */
-input:focus, select:focus, textarea:focus, button:focus {
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
   outline: 2px solid var(--green-main);
   outline-offset: 2px;
 }
