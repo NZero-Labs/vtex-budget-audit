@@ -10,7 +10,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "predeploy": "yarn build",
-    "deploy": "gh-pages -d out"
+    "deploy": "gh-pages -d out --dotfiles"
   },
   "dependencies": {
     "gh-pages": "^6.3.0",
