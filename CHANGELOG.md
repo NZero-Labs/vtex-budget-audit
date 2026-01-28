@@ -7,6 +7,19 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-01-28
+
+### Changed
+
+- **Otimização do Edge Middleware**: Reduzido tamanho de 1.32MB para 86.4KB
+  - Separada configuração em `auth.config.ts` (edge-safe) e `auth.ts` (Node.js)
+  - Middleware usa apenas verificação JWT, sem Prisma/bcrypt
+  - Providers com banco de dados rodam apenas nas API routes
+
+### Fixed
+
+- Corrigido erro "Edge Function size limit exceeded" na Vercel
+
 ## [0.5.1] - 2026-01-28
 
 ### Changed

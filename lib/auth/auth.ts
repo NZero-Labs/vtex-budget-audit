@@ -1,19 +1,27 @@
 /**
- * Configuração do Auth.js v5 (NextAuth)
+ * Configuração completa do Auth.js v5 (NextAuth)
  * 
- * Usa Credentials Provider para autenticação com email/senha.
- * Senhas são validadas com bcrypt.
+ * Este arquivo estende auth.config.ts com:
+ * - Credentials Provider (autenticação email/senha)
+ * - Prisma para buscar usuários
+ * - bcrypt para validar senhas
+ * 
+ * Roda apenas no Node.js runtime (API routes).
  */
 
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { db } from '@/lib/db';
+import { authConfig } from './auth.config';
 
 /**
- * Configuração do NextAuth
+ * Configuração completa do NextAuth
+ * 
+ * Estende authConfig (edge-safe) com providers que requerem Node.js
  */
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       name: 'credentials',
@@ -53,14 +61,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
-  pages: {
-    signIn: '/login',
-  },
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 dias
-  },
   callbacks: {
+    ...authConfig.callbacks,
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;

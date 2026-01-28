@@ -1,52 +1,17 @@
 /**
- * Middleware de autenticação
+ * Middleware de autenticação (Edge Runtime)
  * 
- * Protege rotas que requerem login.
- * Redireciona usuários não autenticados para /login.
+ * Usa configuração edge-safe que NÃO inclui Prisma/bcrypt.
+ * Apenas verifica JWT para proteger rotas.
  */
 
-import { auth } from '@/lib/auth/config';
-import { NextResponse } from 'next/server';
+import NextAuth from 'next-auth';
+import { authConfig } from '@/lib/auth/auth.config';
 
 /**
- * Rotas protegidas que requerem autenticação
+ * Middleware NextAuth com configuração edge-safe
  */
-const protectedRoutes = ['/compare'];
-
-/**
- * Rotas públicas (não requerem autenticação)
- */
-const publicRoutes = ['/login', '/api/auth'];
-
-export default auth((req) => {
-  const { pathname } = req.nextUrl;
-
-  // Verifica se é rota de API auth (sempre permitir)
-  if (pathname.startsWith('/api/auth')) {
-    return NextResponse.next();
-  }
-
-  // Verifica se está autenticado
-  const isAuthenticated = !!req.auth;
-
-  // Se não autenticado e tentando acessar rota protegida
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  if (!isAuthenticated && isProtectedRoute) {
-    const loginUrl = new URL('/login', req.url);
-    loginUrl.searchParams.set('callbackUrl', pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // Se autenticado e tentando acessar login, redireciona para compare
-  if (isAuthenticated && pathname === '/login') {
-    return NextResponse.redirect(new URL('/compare', req.url));
-  }
-
-  return NextResponse.next();
-});
+export default NextAuth(authConfig).auth;
 
 export const config = {
   matcher: [
