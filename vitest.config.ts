@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 export default defineConfig({
-  base: 'vtex-budget-audit',
+  base: '/vtex-budget-audit/',
   plugins: [react()],
   test: {
     environment: 'node',
