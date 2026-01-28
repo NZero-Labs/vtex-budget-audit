@@ -7,9 +7,8 @@
 
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
-import { db, users } from '@/lib/db';
+import { db } from '@/lib/db';
 
 /**
  * Configuração do NextAuth
@@ -30,12 +29,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const email = credentials.email as string;
         const password = credentials.password as string;
 
-        // Busca usuário no banco
-        const [user] = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, email))
-          .limit(1);
+        // Busca usuário no banco com Prisma
+        const user = await db.user.findUnique({
+          where: { email },
+        });
 
         if (!user || !user.isActive) {
           return null;

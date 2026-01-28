@@ -18,7 +18,7 @@ Esta aplicação permite:
 - **TypeScript 5**
 - **Tailwind CSS** + Design System Amara NZero
 - **Auth.js v5** (NextAuth) - Autenticação
-- **Vercel Postgres** + Drizzle ORM - Banco de dados
+- **Prisma ORM** + Prisma Postgres - Banco de dados
 - **Zod** (validação)
 - **Vitest** (testes)
 
@@ -154,24 +154,24 @@ A aplicação requer login para acesso. Apenas administradores podem criar usuá
 NEXTAUTH_SECRET=your-secret-here  # Gerar com: openssl rand -base64 32
 NEXTAUTH_URL=https://seu-app.vercel.app
 
-# Vercel Postgres (auto-populado pela Vercel)
-POSTGRES_URL=
+# Prisma Postgres
+BU_PRISMA_DATABASE_URL=prisma+postgres://accelerate.prisma-data.net/?api_key=...
 ```
 
-### Configurando Vercel Postgres
+### Configurando Prisma Postgres
 
-1. No dashboard da Vercel, vá em **Storage**
-2. Clique em **Create Database** > **Postgres**
-3. Conecte ao seu projeto
-4. As variáveis `POSTGRES_*` serão configuradas automaticamente
+1. Acesse [console.prisma.io](https://console.prisma.io)
+2. Crie um novo projeto e banco de dados Postgres
+3. Copie a connection string (formato: `prisma+postgres://accelerate.prisma-data.net/?api_key=...`)
+4. Configure `BU_PRISMA_DATABASE_URL` no `.env`
 
 ### Criando a Tabela de Usuários
 
 ```bash
-# Gerar migrations
+# Gerar Prisma Client
 npm run db:generate
 
-# Aplicar ao banco
+# Aplicar schema ao banco
 npm run db:push
 ```
 

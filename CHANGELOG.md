@@ -7,14 +7,30 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-01-28
+
+### Changed
+
+- **Migração para Prisma ORM**: Substituído Drizzle ORM + @vercel/postgres por Prisma ORM
+  - Compatível com Prisma Postgres (Accelerate)
+  - Schema em `prisma/schema.prisma`
+  - PrismaClient com `accelerateUrl` para conexão gerenciada
+- Variável de ambiente renomeada de `POSTGRES_URL` para `BU_PRISMA_DATABASE_URL`
+
+### Removed
+
+- Removido `@vercel/postgres` e `drizzle-orm`
+- Removido `drizzle.config.ts`
+- Removido `lib/db/schema.ts` (schema agora no Prisma)
+
 ## [0.5.0] - 2026-01-23
 
 ### Added
 
 - **Sistema de Autenticação**: Login obrigatório para acessar o comparador
   - Auth.js v5 (NextAuth) com Credentials Provider
-  - Vercel Postgres para armazenamento de usuários
-  - Drizzle ORM para queries type-safe
+  - Prisma Postgres para armazenamento de usuários
+  - Prisma ORM para queries type-safe
   - Hash de senhas com bcryptjs
 - Página de login (`/login`) com formulário de email/senha
 - Middleware de proteção de rotas (redireciona para login se não autenticado)

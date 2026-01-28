@@ -3,13 +3,12 @@
  * 
  * Uso: npx tsx scripts/seed-user.ts --email admin@empresa.com --password senha123 --name "Admin"
  * 
- * Requer a variável POSTGRES_URL no ambiente.
+ * Requer a variável BU_PRISMA_DATABASE_URL no ambiente.
  */
 
-import { sql } from '@vercel/postgres';
-import { drizzle } from 'drizzle-orm/vercel-postgres';
+import 'dotenv/config';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import { users } from '../lib/db/schema';
 
 // Parse argumentos da linha de comando
 function parseArgs(): { email: string; password: string; name: string } {
@@ -40,31 +39,38 @@ function parseArgs(): { email: string; password: string; name: string } {
 async function seedUser() {
   const { email, password, name } = parseArgs();
 
-  // Verifica se POSTGRES_URL está definida
-  if (!process.env.POSTGRES_URL) {
-    console.error('Erro: POSTGRES_URL não definida no ambiente');
-    console.error('Configure a variável de ambiente ou use um arquivo .env.local');
+  // Verifica se BU_PRISMA_DATABASE_URL está definida
+  if (!process.env.BU_PRISMA_DATABASE_URL) {
+    console.error('Erro: BU_PRISMA_DATABASE_URL não definida no ambiente');
+    console.error('Configure a variável de ambiente ou use um arquivo .env');
     process.exit(1);
   }
+
+  // Cria cliente Prisma com URL do Accelerate
+  const prisma = new PrismaClient({
+    accelerateUrl: process.env.BU_PRISMA_DATABASE_URL,
+  });
 
   console.log(`Criando usuário: ${email}`);
 
   try {
-    const db = drizzle(sql);
-
     // Gera hash da senha
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Insere usuário
-    const [newUser] = await db
-      .insert(users)
-      .values({
+    // Insere usuário com Prisma
+    const newUser = await prisma.user.create({
+      data: {
         email,
         password: hashedPassword,
         name,
         isActive: true,
-      })
-      .returning({ id: users.id, email: users.email, name: users.name });
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+      },
+    });
 
     console.log('✅ Usuário criado com sucesso:');
     console.log(`   ID: ${newUser.id}`);
@@ -73,12 +79,14 @@ async function seedUser() {
 
     process.exit(0);
   } catch (error) {
-    if (error instanceof Error && error.message.includes('unique')) {
+    if (error instanceof Error && error.message.includes('Unique constraint')) {
       console.error(`❌ Erro: Email "${email}" já está cadastrado`);
     } else {
       console.error('❌ Erro ao criar usuário:', error);
     }
     process.exit(1);
+  } finally {
+    await prisma.$disconnect();
   }
 }
 

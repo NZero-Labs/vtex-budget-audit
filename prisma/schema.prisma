@@ -1,0 +1,25 @@
+// Schema do Prisma para autenticação
+// Documentação: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Datasource sem URL - Prisma 7 usa accelerateUrl no PrismaClient
+datasource db {
+  provider = "postgresql"
+}
+
+/// Tabela de usuários para autenticação
+/// Senhas são armazenadas com hash bcrypt
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("users")
+}

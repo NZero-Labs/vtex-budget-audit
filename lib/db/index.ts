@@ -1,18 +1,26 @@
 /**
- * Cliente de conexão com Vercel Postgres
+ * Cliente de conexão com Postgres via Prisma
  * 
- * Usa Drizzle ORM para queries type-safe.
+ * Usa Prisma Accelerate para conexão gerenciada.
  */
 
-import { sql } from '@vercel/postgres';
-import { drizzle } from 'drizzle-orm/vercel-postgres';
-import * as schema from './schema';
+import { PrismaClient } from '@prisma/client';
+
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 /**
- * Instância do Drizzle conectada ao Vercel Postgres
+ * Instância do Prisma Client
  * 
- * A conexão usa a variável de ambiente POSTGRES_URL automaticamente.
+ * Em desenvolvimento, reutiliza a conexão para evitar hot-reload issues.
+ * A conexão usa a variável de ambiente BU_PRISMA_DATABASE_URL (Prisma Accelerate).
  */
-export const db = drizzle(sql, { schema });
+export const db =
+  globalForPrisma.prisma ||
+  new PrismaClient({
+    // Prisma 7 com Accelerate: passar a URL diretamente
+    accelerateUrl: process.env.BU_PRISMA_DATABASE_URL,
+  });
 
-export * from './schema';
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = db;
+}
