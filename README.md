@@ -5,6 +5,7 @@ Dashboard para comparar orçamentos (Master Data) com carrinhos (OrderForm) da V
 ## Visão Geral
 
 Esta aplicação permite:
+
 - Comparar orçamentos armazenados no Master Data com carrinhos ativos (OrderForm)
 - Identificar divergências de itens, preços, quantidades, promoções e frete
 - Visualizar impacto financeiro das diferenças
@@ -16,6 +17,8 @@ Esta aplicação permite:
 - **React 19**
 - **TypeScript 5**
 - **Tailwind CSS** + Design System Amara NZero
+- **Auth.js v5** (NextAuth) - Autenticação
+- **Vercel Postgres** + Drizzle ORM - Banco de dados
 - **Zod** (validação)
 - **Vitest** (testes)
 
@@ -25,32 +28,33 @@ A aplicação utiliza o design system corporativo Amara NZero, focado em energia
 
 ### Cores Principais
 
-| Token | Hex | Uso |
-|-------|-----|-----|
-| `green-main` | #00953b | Brand, botões primários, status sucesso |
-| `green-light` | #76bc21 | Botões secundários, hover states |
-| `green-lime` | #c1d116 | Acentos, badges de info |
+| Token         | Hex     | Uso                                     |
+| ------------- | ------- | --------------------------------------- |
+| `green-main`  | #00953b | Brand, botões primários, status sucesso |
+| `green-light` | #76bc21 | Botões secundários, hover states        |
+| `green-lime`  | #c1d116 | Acentos, badges de info                 |
 
 ### Cores Secundárias
 
-| Token | Hex | Uso |
-|-------|-----|-----|
+| Token         | Hex     | Uso                      |
+| ------------- | ------- | ------------------------ |
 | `brand-black` | #3c3c3b | Texto principal, títulos |
-| `grey-dark` | #575756 | Subtítulos, labels |
+| `grey-dark`   | #575756 | Subtítulos, labels       |
 | `grey-medium` | #9d9c9c | Texto secundário, bordas |
 
 ### Cores de Status
 
-| Token | Hex | Uso |
-|-------|-----|-----|
-| `status-success` | #00953b | Sucesso, OK |
-| `status-warning` | #ffc000 | Alertas, atenção |
-| `status-error` | #d32f2f | Erros, crítico |
-| `status-info` | #1c9bd8 | Informação, links |
+| Token            | Hex     | Uso               |
+| ---------------- | ------- | ----------------- |
+| `status-success` | #00953b | Sucesso, OK       |
+| `status-warning` | #ffc000 | Alertas, atenção  |
+| `status-error`   | #d32f2f | Erros, crítico    |
+| `status-info`    | #1c9bd8 | Informação, links |
 
 ### Tipografia
 
 Fonte principal: **Lato** (Google Fonts)
+
 - Light: 300
 - Regular: 400
 - Medium: 500
@@ -81,10 +85,10 @@ Fonte principal: **Lato** (Google Fonts)
 
 A aplicação suporta 3 modos de tema:
 
-| Modo | Descrição |
-|------|-----------|
-| Light | Tema claro com fundo branco |
-| Dark | Tema escuro com fundo cinza |
+| Modo   | Descrição                                  |
+| ------ | ------------------------------------------ |
+| Light  | Tema claro com fundo branco                |
+| Dark   | Tema escuro com fundo cinza                |
 | System | Segue a preferência do sistema operacional |
 
 O toggle de tema está localizado no header. A preferência é salva no localStorage e persiste entre sessões.
@@ -138,6 +142,55 @@ USE_MOCK_DATA=false
 3. Crie ou copie uma chave existente com permissões para:
    - Checkout API (leitura)
    - Master Data API v2 (leitura)
+
+## Autenticação
+
+A aplicação requer login para acesso. Apenas administradores podem criar usuários.
+
+### Variáveis de Ambiente para Autenticação
+
+```env
+# Auth.js
+NEXTAUTH_SECRET=your-secret-here  # Gerar com: openssl rand -base64 32
+NEXTAUTH_URL=https://seu-app.vercel.app
+
+# Vercel Postgres (auto-populado pela Vercel)
+POSTGRES_URL=
+```
+
+### Configurando Vercel Postgres
+
+1. No dashboard da Vercel, vá em **Storage**
+2. Clique em **Create Database** > **Postgres**
+3. Conecte ao seu projeto
+4. As variáveis `POSTGRES_*` serão configuradas automaticamente
+
+### Criando a Tabela de Usuários
+
+```bash
+# Gerar migrations
+npm run db:generate
+
+# Aplicar ao banco
+npm run db:push
+```
+
+### Criando Usuários
+
+Somente administradores podem criar usuários via CLI:
+
+```bash
+# Criar usuário
+npx tsx scripts/seed-user.ts --email admin@empresa.com --password senha123 --name "Admin"
+```
+
+### Fluxo de Autenticação
+
+1. Usuário acessa `/compare`
+2. Middleware redireciona para `/login` se não autenticado
+3. Usuário faz login com email/senha
+4. Sessão JWT é criada (válida por 30 dias)
+5. Usuário é redirecionado para `/compare`
 
 ## Uso
 
@@ -248,47 +301,50 @@ Documentação: https://developers.vtex.com/docs/api-reference/master-data-api-v
 ## Regras de Comparação
 
 ### Itens
-| Cenário | Criticidade |
-|---------|-------------|
-| Item no orçamento, ausente no carrinho | Crítica |
-| Item no carrinho, ausente no orçamento | Alta |
-| Diferença de preço > 5% | Alta |
-| Diferença de preço 1-5% | Média |
-| Diferença de quantidade | Média |
+
+| Cenário                                | Criticidade |
+| -------------------------------------- | ----------- |
+| Item no orçamento, ausente no carrinho | Crítica     |
+| Item no carrinho, ausente no orçamento | Alta        |
+| Diferença de preço > 5%                | Alta        |
+| Diferença de preço 1-5%                | Média       |
+| Diferença de quantidade                | Média       |
 
 #### Comparação de Preço
 
 A comparação de preços utiliza o campo `sellingPrice` (preço de venda) em ambos os lados:
 
-| Fonte | Campo | Descrição |
-|-------|-------|-----------|
-| Carrinho | `item.sellingPrice` | Preço de venda do item no OrderForm |
-| Orçamento | `item.sellingPrice` | Preço de venda do item no Budget |
+| Fonte     | Campo               | Descrição                           |
+| --------- | ------------------- | ----------------------------------- |
+| Carrinho  | `item.sellingPrice` | Preço de venda do item no OrderForm |
+| Orçamento | `item.sellingPrice` | Preço de venda do item no Budget    |
 
 Se `sellingPrice` não existir no orçamento, utiliza `price` como fallback.
 
 ### Totais
-| Cenário | Criticidade |
-|---------|-------------|
-| Total difere > 0.5% ou > R$ 50 | Crítica |
-| Diferença de frete significativa | Média/Alta |
+
+| Cenário                          | Criticidade |
+| -------------------------------- | ----------- |
+| Total difere > 0.5% ou > R$ 50   | Crítica     |
+| Diferença de frete significativa | Média/Alta  |
 
 ### Entrega
-| Cenário | Criticidade |
-|---------|-------------|
-| CEP diferente | Alta |
-| Tipo de entrega diferente | Média |
+
+| Cenário                   | Criticidade |
+| ------------------------- | ----------- |
+| CEP diferente             | Alta        |
+| Tipo de entrega diferente | Média       |
 
 #### Mapeamento de Tipo de Entrega (Carrinho → Orçamento)
 
 | Carrinho (selectedSla) | Orçamento (deliveryType/shippingType) |
-|------------------------|---------------------------------------|
-| AMARANZ LOGISTICA CAJ  | PDO/CIF |
-| AMARANZ LOGISTICA FSA  | PDO/CIF |
-| EXP LOGISTICA CAJ      | EXP/CIF |
-| EXP LOGISTICA FSA      | EXP/CIF |
-| FOB LOGISTICA CAJ      | PDO/FOB |
-| FOB LOGISTICA FSA      | PDO/FOB |
+| ---------------------- | ------------------------------------- |
+| AMARANZ LOGISTICA CAJ  | PDO/CIF                               |
+| AMARANZ LOGISTICA FSA  | PDO/CIF                               |
+| EXP LOGISTICA CAJ      | EXP/CIF                               |
+| EXP LOGISTICA FSA      | EXP/CIF                               |
+| FOB LOGISTICA CAJ      | PDO/FOB                               |
+| FOB LOGISTICA FSA      | PDO/FOB                               |
 
 - **PDO** = Padrão
 - **EXP** = Expresso
@@ -297,21 +353,21 @@ Se `sellingPrice` não existir no orçamento, utiliza `price` como fallback.
 
 #### Campos de Frete no Orçamento
 
-| Campo | Descrição |
-|-------|-----------|
-| `address.postalCode` | CEP do cliente |
-| `deliveryType` | Tipo de entrega (PDO ou EXP) |
-| `shippingType` | Tipo de frete (CIF ou FOB) |
-| `shipping` | Valor do frete base (CIF/PDO) |
+| Campo                   | Descrição                       |
+| ----------------------- | ------------------------------- |
+| `address.postalCode`    | CEP do cliente                  |
+| `deliveryType`          | Tipo de entrega (PDO ou EXP)    |
+| `shippingType`          | Tipo de frete (CIF ou FOB)      |
+| `shipping`              | Valor do frete base (CIF/PDO)   |
 | `shippingDeliveryValue` | Diferença para entrega expressa |
 
 #### Campos de Desconto no Orçamento
 
-| Campo | Prioridade | Descrição |
-|-------|------------|-----------|
-| `items[].priceTags` | 1 | Array de descontos por item (valores negativos) |
-| `discounts` | 2 | Valor total de descontos |
-| `totals.discount` | 3 | Valor de desconto (fallback) |
+| Campo               | Prioridade | Descrição                                       |
+| ------------------- | ---------- | ----------------------------------------------- |
+| `items[].priceTags` | 1          | Array de descontos por item (valores negativos) |
+| `discounts`         | 2          | Valor total de descontos                        |
+| `totals.discount`   | 3          | Valor de desconto (fallback)                    |
 
 ##### Estrutura do PriceTag
 
@@ -326,11 +382,11 @@ Se `sellingPrice` não existir no orçamento, utiliza `price` como fallback.
 
 #### Campos de Frete no Carrinho
 
-| Campo | Descrição |
-|-------|-----------|
-| `shippingData.address.postalCode` | CEP de entrega |
-| `logisticsInfo[0].selectedSla` | Tipo de entrega selecionado |
-| `totalizers.Shipping` | Valor total do frete |
+| Campo                             | Descrição                   |
+| --------------------------------- | --------------------------- |
+| `shippingData.address.postalCode` | CEP de entrega              |
+| `logisticsInfo[0].selectedSla`    | Tipo de entrega selecionado |
+| `totalizers.Shipping`             | Valor total do frete        |
 
 ## Modo Mock
 

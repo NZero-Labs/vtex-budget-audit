@@ -10,25 +10,36 @@
     "test": "vitest",
     "test:run": "vitest run",
     "predeploy": "yarn build",
-    "deploy": "gh-pages -d out --dotfiles"
+    "deploy": "gh-pages -d out --dotfiles",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "seed:user": "tsx scripts/seed-user.ts"
   },
   "dependencies": {
+    "@vercel/postgres": "^0.10.0",
+    "bcryptjs": "^3.0.3",
+    "drizzle-orm": "^0.45.1",
     "gh-pages": "^6.3.0",
     "next": "^15.1.0",
+    "next-auth": "^5.0.0-beta.30",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
     "@testing-library/react": "^16.1.0",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.0",
+    "drizzle-kit": "^0.31.8",
     "eslint": "^9.17.0",
     "eslint-config-next": "^15.1.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.21.0",
     "typescript": "^5.7.0",
     "vitest": "^2.1.0"
   }
