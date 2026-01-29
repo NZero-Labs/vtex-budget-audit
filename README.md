@@ -145,7 +145,10 @@ USE_MOCK_DATA=false
 
 ## Autenticação
 
-A aplicação requer login para acesso. Apenas administradores podem criar usuários.
+A aplicação requer login para acesso. Existem dois tipos de usuários:
+
+- **USER**: Acesso ao comparador (`/compare`)
+- **ADMIN**: Acesso ao comparador e painel administrativo (`/admin`)
 
 ### Variáveis de Ambiente para Autenticação
 
@@ -175,22 +178,35 @@ npm run db:generate
 npm run db:push
 ```
 
-### Criando Usuários
-
-Somente administradores podem criar usuários via CLI:
+### Criando o Primeiro Usuário (Admin)
 
 ```bash
-# Criar usuário
+# Criar usuário via CLI
 npx tsx scripts/seed-user.ts --email admin@empresa.com --password senha123 --name "Admin"
+
+# Promover a administrador
+npx tsx scripts/set-admin.ts admin@empresa.com
 ```
+
+### Painel de Administração
+
+Usuários com role ADMIN têm acesso ao painel em `/admin`:
+
+- **Listar usuários**: Visualizar todos os usuários cadastrados
+- **Criar usuário**: Adicionar novos usuários com nome, email, senha e role
+- **Editar usuário**: Alterar dados, role e status (ativo/inativo)
+- **Desativar usuário**: Soft delete (usuário não consegue mais fazer login)
+
+O link "Admin" aparece no header apenas para administradores.
 
 ### Fluxo de Autenticação
 
-1. Usuário acessa `/compare`
+1. Usuário acessa `/compare` ou `/admin`
 2. Middleware redireciona para `/login` se não autenticado
-3. Usuário faz login com email/senha
-4. Sessão JWT é criada (válida por 30 dias)
-5. Usuário é redirecionado para `/compare`
+3. Middleware verifica role ADMIN para acessar `/admin`
+4. Usuário faz login com email/senha
+5. Sessão JWT é criada (válida por 12 horas)
+6. Usuário é redirecionado para a página solicitada
 
 ## Uso
 

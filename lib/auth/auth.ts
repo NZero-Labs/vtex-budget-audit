@@ -16,6 +16,23 @@ import { db } from '@/lib/db';
 import { authConfig } from './auth.config';
 
 /**
+ * Extensão dos tipos do NextAuth para incluir role
+ */
+declare module 'next-auth' {
+  interface User {
+    role?: string;
+  }
+  interface Session {
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      role: string;
+    };
+  }
+}
+
+/**
  * Configuração completa do NextAuth
  * 
  * Estende authConfig (edge-safe) com providers que requerem Node.js
@@ -52,28 +69,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        // Retorna dados do usuário (sem senha)
+        // Retorna dados do usuário (sem senha, com role)
         return {
           id: String(user.id),
           email: user.email,
           name: user.name,
+          role: user.role,
         };
       },
     }),
   ],
-  callbacks: {
-    ...authConfig.callbacks,
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user && token.id) {
-        session.user.id = token.id as string;
-      }
-      return session;
-    },
-  },
+  // Callbacks herdados de authConfig (jwt, session, authorized)
 });

@@ -7,6 +7,40 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-01-29
+
+### Fixed
+
+- **Correção do middleware admin**: Callbacks `jwt` e `session` movidos para `auth.config.ts`
+  - Role agora é propagado corretamente no token JWT
+  - Middleware consegue verificar role ADMIN para acessar `/admin`
+  - Usuários devem fazer logout/login para atualizar o token
+
+## [0.6.0] - 2026-01-29
+
+### Added
+
+- **Interface de Administração**: Painel para gerenciar usuários do sistema
+  - Página `/admin` com listagem, criação e edição de usuários
+  - Controle de roles (USER/ADMIN) para permissões
+  - API routes `/api/admin/users` com CRUD completo
+  - Componentes `UserTable` e `UserForm` para gerenciamento
+- Campo `role` no modelo User (enum: USER, ADMIN)
+- Proteção de rota `/admin` apenas para administradores
+- Link "Admin" no header para usuários com role ADMIN
+- Script `set-admin.ts` para promover usuários a administrador
+
+### Changed
+
+- Sessão do usuário agora inclui `role` no token JWT
+- Middleware verifica role para rotas administrativas
+- `UserMenu` mostra indicador de admin e link para painel
+
+### Security
+
+- Rotas administrativas verificam role ADMIN no servidor
+- Usuários não-admin são redirecionados ao tentar acessar `/admin`
+
 ## [0.5.2] - 2026-01-28
 
 ### Changed
