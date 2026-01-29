@@ -34,11 +34,13 @@ export const mockBudgetRaw: VTEXBudget = {
     tax: 0,
     total: 344.70,
   },
-  shipping: {
+  // Campos de entrega (formato Amara NZero)
+  address: {
     postalCode: '01310-100',
-    deliveryType: 'Normal',
-    shippingValue: 15.00,
   },
+  deliveryType: 'PDO',
+  shippingType: 'CIF',
+  shipping: 15.00, // Valor do frete (número)
   promotions: [
     { id: 'promo1', name: 'Desconto 10%', value: 20.00 },
   ],

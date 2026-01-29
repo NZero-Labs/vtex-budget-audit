@@ -7,6 +7,23 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Unreleased]
 
+### Added
+
+- **Suporte a Marketing Tags (Bonifiq)**: Verificação de tags de marketing entre orçamento e carrinho
+  - Nova tipagem `MarketingTagDiff` para diferenças de marketing tags
+  - Campo `marketingTags` adicionado a `VTEXBudget`
+  - Campo `marketingData.marketingTags` adicionado a `VTEXOrderForm`
+  - Extração de tags de `ratesAndBenefitsData.rateAndBenefitsIdentifiers[].matchedParameters.marketingTags`
+  - Funções `checkMarketingTag`, `compareMarketingTags` e `checkBonifiqTag`
+  - Constante `BONIFIQ_TAG` para tag "usar-pontos-agora"
+  - Campo `marketingTagDiffs` no resultado da comparação (`ComparisonResult`)
+- Normalização automática de marketing tags (lowercase, trim)
+
+### Changed
+
+- `NormalizedData.context` agora inclui campo `marketingTags`
+- `generateSummary` considera impacto de marketing tags no cálculo de criticidade
+
 ## [0.6.1] - 2026-01-29
 
 ### Fixed

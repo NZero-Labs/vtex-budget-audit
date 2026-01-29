@@ -22,7 +22,7 @@ export type ImpactLevel = 'none' | 'low' | 'medium' | 'high' | 'critical';
 /**
  * Status de comparação de item
  */
-export type ItemDiffStatus = 
+export type ItemDiffStatus =
   | 'match'              // Item idêntico em ambos
   | 'quantity_diff'      // Quantidade diferente
   | 'price_diff'         // Preço diferente
@@ -122,6 +122,11 @@ export interface NormalizedData {
     sellerId?: string;
     hasItemWithoutStock?: boolean;
     hasPreSaleItem?: boolean;
+    /**
+     * Tags de marketing aplicadas
+     * Usado para verificar promoções como Bonifiq ("usar-pontos-agora")
+     */
+    marketingTags?: string[];
   };
 }
 
@@ -253,6 +258,25 @@ export interface PromoDiff {
   explanation?: string;
 }
 
+/**
+ * Diferença de marketing tag
+ * Usado para verificar tags como "usar-pontos-agora" (Bonifiq)
+ */
+export interface MarketingTagDiff {
+  /** Nome da tag */
+  tag: string;
+  /** Tag presente no orçamento */
+  inBudget: boolean;
+  /** Tag presente no carrinho */
+  inCart: boolean;
+  /** Tags estão alinhadas */
+  match: boolean;
+  /** Criticidade */
+  impact: ImpactLevel;
+  /** Explicação */
+  explanation?: string;
+}
+
 // =============================================================================
 // Resultado da Comparação
 // =============================================================================
@@ -303,6 +327,8 @@ export interface ComparisonResult {
   shippingDiff: ShippingDiff | null;
   /** Diferenças de promoções */
   promoDiffs: PromoDiff[];
+  /** Diferenças de marketing tags (ex: Bonifiq) */
+  marketingTagDiffs: MarketingTagDiff[];
   /** Metadados */
   metadata: ComparisonMetadata;
 }
@@ -327,6 +353,17 @@ export interface VTEXOrderForm {
   ratesAndBenefitsData?: {
     rateAndBenefitsIdentifiers?: VTEXRateAndBenefit[];
     teaser?: unknown[];
+  };
+  /**
+   * Dados de marketing do carrinho
+   * Contém tags de marketing aplicadas (ex: Bonifiq)
+   */
+  marketingData?: {
+    marketingTags?: string[];
+    utmCampaign?: string;
+    utmSource?: string;
+    utmMedium?: string;
+    coupon?: string;
   };
   clientProfileData?: {
     email?: string;
@@ -399,7 +436,14 @@ export interface VTEXRateAndBenefit {
   name: string;
   featured?: boolean;
   description?: string;
-  matchedParameters?: Record<string, string>;
+  /**
+   * Parâmetros que ativaram a promoção
+   * marketingTags pode conter tags como "usar-pontos-agora" (Bonifiq)
+   */
+  matchedParameters?: {
+    marketingTags?: string;
+    [key: string]: string | undefined;
+  };
   additionalInfo?: {
     brandName?: string;
     brandId?: string;
@@ -488,6 +532,11 @@ export interface VTEXBudget {
     cluster?: string;
     sellerId?: string;
   };
+  /**
+   * Tags de marketing aplicadas ao orçamento
+   * Ex: "usar-pontos-agora" (Bonifiq)
+   */
+  marketingTags?: string[];
   /** Data de criação */
   createdAt?: string;
   /** Data de atualização */

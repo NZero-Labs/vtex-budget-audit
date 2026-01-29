@@ -351,6 +351,41 @@ Se `sellingPrice` não existir no orçamento, utiliza `price` como fallback.
 | CEP diferente             | Alta        |
 | Tipo de entrega diferente | Média       |
 
+### Marketing Tags (Bonifiq)
+
+A aplicação verifica marketing tags entre orçamento e carrinho, especialmente a tag `usar-pontos-agora` da Bonifiq:
+
+| Cenário                               | Criticidade |
+| ------------------------------------- | ----------- |
+| Tag no orçamento, ausente no carrinho | Alta        |
+| Tag no carrinho, ausente no orçamento | Média       |
+| Tags alinhadas                        | OK          |
+
+#### Locais das Marketing Tags
+
+| Fonte     | Campo                                                                                         |
+| --------- | --------------------------------------------------------------------------------------------- |
+| Orçamento | `budget.marketingTags[]`                                                                      |
+| Carrinho  | `orderForm.marketingData.marketingTags[]`                                                     |
+| Carrinho  | `orderForm.ratesAndBenefitsData.rateAndBenefitsIdentifiers[].matchedParameters.marketingTags` |
+
+#### Funções de Verificação
+
+```typescript
+import {
+  checkBonifiqTag,
+  compareMarketingTags,
+  BONIFIQ_TAG,
+} from "@/lib/compare";
+
+// Verificar tag específica da Bonifiq
+const bonifiqResult = checkBonifiqTag(budgetTags, cartTags);
+// { tag: 'usar-pontos-agora', inBudget: true, inCart: true, match: true, impact: 'none' }
+
+// Comparar todas as marketing tags
+const tagDiffs = compareMarketingTags(budgetTags, cartTags);
+```
+
 #### Mapeamento de Tipo de Entrega (Carrinho → Orçamento)
 
 | Carrinho (selectedSla) | Orçamento (deliveryType/shippingType) |
@@ -472,6 +507,8 @@ A estrutura esperada do Budget no Master Data pode ser customizada em:
     name: string;
     value: number;
   }];
+  // Marketing tags (ex: Bonifiq)
+  marketingTags?: string[]; // Ex: ['usar-pontos-agora']
 }
 ```
 

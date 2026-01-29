@@ -106,7 +106,24 @@ export const mockOrderForm: VTEXOrderForm = {
         name: 'Cupom DESCONTO20',
         description: 'Desconto de R$ 20,00',
       },
+      {
+        id: 'promo-bonifiq',
+        name: 'Bonifiq - Usar Pontos',
+        description: 'Desconto usando pontos Bonifiq',
+        matchedParameters: {
+          marketingTags: 'usar-pontos-agora',
+        },
+      },
     ],
+  },
+  /**
+   * Dados de marketing do carrinho
+   * Tags aplicadas para ativar promoções
+   */
+  marketingData: {
+    marketingTags: ['usar-pontos-agora'],
+    utmCampaign: 'bonifiq-campanha',
+    utmSource: 'email',
   },
   value: 30460, // R$ 304,60 em centavos (total final)
   messages: [],
@@ -220,6 +237,11 @@ export const mockBudget: VTEXBudget = {
     cluster: 'premium',
     sellerId: '1',
   },
+  /**
+   * Tags de marketing aplicadas ao orçamento
+   * Ex: "usar-pontos-agora" para promoção Bonifiq
+   */
+  marketingTags: ['usar-pontos-agora'],
   createdAt: '2026-01-20T10:00:00Z',
   updatedAt: '2026-01-20T10:00:00Z',
 };

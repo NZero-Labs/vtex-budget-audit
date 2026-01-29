@@ -15,6 +15,7 @@ import {
   TotalsDiff,
   ShippingDiff,
   PromoDiff,
+  MarketingTagDiff,
   ImpactLevel,
   ComparisonSummary,
 } from './types';
@@ -155,8 +156,8 @@ function compareItemPair(budgetItem: NormalizedItem, cartItem: NormalizedItem): 
     status = 'price_diff';
   }
 
-  const impact = status === 'match' 
-    ? 'none' 
+  const impact = status === 'match'
+    ? 'none'
     : determineImpact(priceDiffPct, priceDiff);
 
   let explanation: string | undefined;
@@ -217,7 +218,7 @@ export function compareTotals(
   let explanation: string | undefined;
   if (impact !== 'none') {
     const parts: string[] = [];
-    
+
     if (Math.abs(subtotal.diffPct) > 0.1) {
       parts.push(`Subtotal ${subtotal.diff > 0 ? 'maior' : 'menor'}: ${formatCurrency(Math.abs(subtotal.diff))}`);
     }
@@ -227,7 +228,7 @@ export function compareTotals(
     if (Math.abs(shipping.diff) > 0.01) {
       parts.push(`Frete ${shipping.diff > 0 ? 'maior' : 'menor'}: ${formatCurrency(Math.abs(shipping.diff))}`);
     }
-    
+
     explanation = `Diferença total: ${formatCurrency(financialImpact)}. ` + parts.join('. ');
   }
 
@@ -279,14 +280,14 @@ const CART_TO_BUDGET_DELIVERY_MAP: Record<string, BudgetDeliveryMapping> = {
 function mapCartDeliveryTypeToBudget(cartDeliveryType: string): BudgetDeliveryMapping | null {
   // Normalizar para uppercase e remover espaços extras
   const normalized = cartDeliveryType.trim().toUpperCase();
-  
+
   // Buscar no mapeamento
   for (const [cartType, budgetMapping] of Object.entries(CART_TO_BUDGET_DELIVERY_MAP)) {
     if (normalized === cartType.toUpperCase()) {
       return budgetMapping;
     }
   }
-  
+
   return null;
 }
 
@@ -300,29 +301,29 @@ function areDeliveryTypesEquivalent(
 ): boolean {
   // Mapear o tipo do carrinho para o formato do orçamento
   const mappedCart = mapCartDeliveryTypeToBudget(cartDeliveryType);
-  
+
   if (!mappedCart) {
     // Se não encontrou mapeamento, faz comparação direta (case insensitive)
     return cartDeliveryType.toLowerCase() === budgetDeliveryType.toLowerCase();
   }
-  
+
   // O budgetDeliveryType pode estar no formato "PDO/CIF" ou separado
   const budgetNormalized = budgetDeliveryType.toUpperCase();
-  
+
   // Verifica se o budget contém os dois componentes
   const hasDeliveryType = budgetNormalized.includes(mappedCart.deliveryType);
   const hasShippingType = budgetNormalized.includes(mappedCart.shippingType);
-  
+
   // Se o budget tem ambos os componentes no formato combinado
   if (hasDeliveryType && hasShippingType) {
     return true;
   }
-  
+
   // Se o budget só tem deliveryType, compara só isso
   if (budgetNormalized === mappedCart.deliveryType) {
     return true;
   }
-  
+
   // Formato "deliveryType/shippingType"
   const expectedFormat = `${mappedCart.deliveryType}/${mappedCart.shippingType}`;
   return budgetNormalized === expectedFormat;
@@ -368,16 +369,16 @@ export function compareShipping(
         diffPct: 100,
       },
       impact: 'high',
-      explanation: budgetShipping 
-        ? 'Dados de entrega do carrinho não encontrados.' 
+      explanation: budgetShipping
+        ? 'Dados de entrega do carrinho não encontrados.'
         : 'Orçamento sem dados de entrega para comparação.',
     };
   }
 
   // Comparar CEPs (normalizados)
-  const postalCodeDiff = normalizePostalCode(budgetShipping.postalCode) !== 
-                         normalizePostalCode(cartShipping.postalCode);
-  
+  const postalCodeDiff = normalizePostalCode(budgetShipping.postalCode) !==
+    normalizePostalCode(cartShipping.postalCode);
+
   // Comparar tipos de entrega usando o mapeamento
   const deliveryTypeDiff = !areDeliveryTypesEquivalent(
     cartShipping.deliveryType,
@@ -523,14 +524,182 @@ export function comparePromotions(
         cartValue: cartPromo.value,
         impact: cartPromo.value > 0 ? 'medium' : 'low',
         explanation: `Promoção "${cartPromo.name}" aplicada no carrinho mas não estava prevista no orçamento. ` +
-          (cartPromo.value > 0 
-            ? `Desconto adicional de ${formatCurrency(cartPromo.value)}.` 
+          (cartPromo.value > 0
+            ? `Desconto adicional de ${formatCurrency(cartPromo.value)}.`
             : 'Verifique se é uma promoção válida.'),
       });
     }
   }
 
   return diffs;
+}
+
+// =============================================================================
+// Comparação de Marketing Tags
+// =============================================================================
+
+/**
+ * Tag específica da Bonifiq para uso de pontos
+ */
+export const BONIFIQ_TAG = 'usar-pontos-agora';
+
+/**
+ * Verifica se uma marketing tag específica está presente
+ * 
+ * @param tag Tag a verificar
+ * @param budgetTags Tags do orçamento
+ * @param cartTags Tags do carrinho
+ * @returns Resultado da verificação
+ */
+export function checkMarketingTag(
+  tag: string,
+  budgetTags: string[],
+  cartTags: string[]
+): { inBudget: boolean; inCart: boolean; match: boolean } {
+  const normalizedTag = tag.trim().toLowerCase();
+  const inBudget = budgetTags.some(t => t.toLowerCase() === normalizedTag);
+  const inCart = cartTags.some(t => t.toLowerCase() === normalizedTag);
+
+  return {
+    inBudget,
+    inCart,
+    match: inBudget === inCart,
+  };
+}
+
+/**
+ * Compara marketing tags entre orçamento e carrinho
+ * Identifica tags presentes em um mas não no outro
+ * 
+ * @param budgetTags Tags do orçamento
+ * @param cartTags Tags do carrinho
+ * @param tagsToCheck Tags específicas para verificar (ex: Bonifiq)
+ * @returns Array de diferenças de marketing tags
+ */
+export function compareMarketingTags(
+  budgetTags: string[],
+  cartTags: string[],
+  tagsToCheck: string[] = [BONIFIQ_TAG]
+): MarketingTagDiff[] {
+  const diffs: MarketingTagDiff[] = [];
+
+  // Normalizar tags
+  const normalizedBudgetTags = budgetTags.map(t => t.trim().toLowerCase());
+  const normalizedCartTags = cartTags.map(t => t.trim().toLowerCase());
+
+  // Verificar tags específicas
+  for (const tag of tagsToCheck) {
+    const normalizedTag = tag.trim().toLowerCase();
+    const check = checkMarketingTag(normalizedTag, normalizedBudgetTags, normalizedCartTags);
+
+    // Só adiciona se há divergência ou se a tag está presente
+    if (check.inBudget || check.inCart) {
+      let impact: ImpactLevel = 'none';
+      let explanation: string | undefined;
+
+      if (!check.match) {
+        if (check.inBudget && !check.inCart) {
+          // Tag no orçamento mas não no carrinho - promoção pode não ser aplicada
+          impact = 'high';
+          explanation = `Tag "${tag}" está no orçamento mas não foi aplicada no carrinho. ` +
+            'A promoção associada pode não ser aplicada corretamente.';
+        } else if (!check.inBudget && check.inCart) {
+          // Tag no carrinho mas não no orçamento - promoção extra
+          impact = 'medium';
+          explanation = `Tag "${tag}" foi aplicada no carrinho mas não estava prevista no orçamento.`;
+        }
+      }
+
+      diffs.push({
+        tag,
+        inBudget: check.inBudget,
+        inCart: check.inCart,
+        match: check.match,
+        impact,
+        explanation,
+      });
+    }
+  }
+
+  // Verificar tags do orçamento que não estão nas tags específicas
+  for (const budgetTag of normalizedBudgetTags) {
+    const isSpecificTag = tagsToCheck.some(t => t.toLowerCase() === budgetTag);
+    if (isSpecificTag) continue; // Já verificada acima
+
+    const inCart = normalizedCartTags.includes(budgetTag);
+
+    if (!inCart) {
+      diffs.push({
+        tag: budgetTag,
+        inBudget: true,
+        inCart: false,
+        match: false,
+        impact: 'low',
+        explanation: `Tag "${budgetTag}" no orçamento não encontrada no carrinho.`,
+      });
+    }
+  }
+
+  // Verificar tags do carrinho que não estão no orçamento
+  for (const cartTag of normalizedCartTags) {
+    const isSpecificTag = tagsToCheck.some(t => t.toLowerCase() === cartTag);
+    if (isSpecificTag) continue; // Já verificada acima
+
+    const inBudget = normalizedBudgetTags.includes(cartTag);
+
+    if (!inBudget) {
+      diffs.push({
+        tag: cartTag,
+        inBudget: false,
+        inCart: true,
+        match: false,
+        impact: 'low',
+        explanation: `Tag "${cartTag}" no carrinho não estava no orçamento.`,
+      });
+    }
+  }
+
+  return diffs;
+}
+
+/**
+ * Verifica especificamente a tag da Bonifiq
+ * Retorna resultado detalhado para a promoção "usar-pontos-agora"
+ * 
+ * @param budgetTags Tags do orçamento
+ * @param cartTags Tags do carrinho
+ * @returns Resultado da verificação da tag Bonifiq
+ */
+export function checkBonifiqTag(
+  budgetTags: string[],
+  cartTags: string[]
+): MarketingTagDiff {
+  const check = checkMarketingTag(BONIFIQ_TAG, budgetTags, cartTags);
+
+  let impact: ImpactLevel = 'none';
+  let explanation: string | undefined;
+
+  if (!check.match) {
+    if (check.inBudget && !check.inCart) {
+      impact = 'high';
+      explanation = 'Bonifiq: Tag "usar-pontos-agora" está no orçamento mas não no carrinho. ' +
+        'O cliente pode não conseguir usar os pontos Bonifiq.';
+    } else if (!check.inBudget && check.inCart) {
+      impact = 'medium';
+      explanation = 'Bonifiq: Tag "usar-pontos-agora" aplicada no carrinho mas não prevista no orçamento.';
+    }
+  } else if (check.inBudget && check.inCart) {
+    explanation = 'Bonifiq: Tag "usar-pontos-agora" presente em ambos - pontos podem ser utilizados.';
+  }
+
+  return {
+    tag: BONIFIQ_TAG,
+    inBudget: check.inBudget,
+    inCart: check.inCart,
+    match: check.match,
+    impact,
+    explanation,
+  };
 }
 
 // =============================================================================
@@ -544,7 +713,8 @@ export function generateSummary(
   itemDiffs: ItemDiff[],
   totalsDiff: TotalsDiff,
   shippingDiff: ShippingDiff | null,
-  promoDiffs: PromoDiff[]
+  promoDiffs: PromoDiff[],
+  marketingTagDiffs: MarketingTagDiff[] = []
 ): ComparisonSummary {
   // Contar divergências por nível
   const allImpacts = [
@@ -552,6 +722,7 @@ export function generateSummary(
     totalsDiff.impact,
     shippingDiff?.impact || 'none',
     ...promoDiffs.map((d) => d.impact),
+    ...marketingTagDiffs.map((d) => d.impact),
   ];
 
   const criticalDiffs = allImpacts.filter((i) => i === 'critical').length;

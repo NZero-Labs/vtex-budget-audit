@@ -52,11 +52,17 @@ export function normalizeOrderForm(orderForm: VTEXOrderForm): NormalizedData {
   // Normalizar promoções
   const promotions = normalizeOrderFormPromotions(orderForm);
 
+  // Extrair marketing tags
+  const marketingTags = extractOrderFormMarketingTags(orderForm);
+
   return {
     items,
     totals,
     shipping,
     promotions,
+    context: {
+      marketingTags,
+    },
   };
 }
 
@@ -130,6 +136,42 @@ function normalizeOrderFormPromotions(orderForm: VTEXOrderForm): NormalizedPromo
 }
 
 /**
+ * Extrai marketing tags do OrderForm
+ * 
+ * As tags podem estar em dois lugares:
+ * 1. marketingData.marketingTags (array direto)
+ * 2. ratesAndBenefitsData.rateAndBenefitsIdentifiers[].matchedParameters.marketingTags (string)
+ * 
+ * @param orderForm OrderForm da VTEX
+ * @returns Array de marketing tags únicas
+ */
+function extractOrderFormMarketingTags(orderForm: VTEXOrderForm): string[] {
+  const tags = new Set<string>();
+
+  // 1. Extrair de marketingData.marketingTags
+  if (orderForm.marketingData?.marketingTags) {
+    for (const tag of orderForm.marketingData.marketingTags) {
+      if (tag) tags.add(tag.trim().toLowerCase());
+    }
+  }
+
+  // 2. Extrair de ratesAndBenefitsData.rateAndBenefitsIdentifiers[].matchedParameters.marketingTags
+  const ratesAndBenefits = orderForm.ratesAndBenefitsData?.rateAndBenefitsIdentifiers || [];
+  for (const benefit of ratesAndBenefits) {
+    const marketingTagsStr = benefit.matchedParameters?.marketingTags;
+    if (marketingTagsStr) {
+      // Pode vir como string separada por vírgula ou ponto-e-vírgula
+      const parsedTags = marketingTagsStr.split(/[,;]/).map(t => t.trim().toLowerCase()).filter(Boolean);
+      for (const tag of parsedTags) {
+        tags.add(tag);
+      }
+    }
+  }
+
+  return Array.from(tags);
+}
+
+/**
  * Normaliza um Budget do Master Data para a estrutura comum
  * 
  * NOTA: A estrutura do Budget depende de como foi configurada
@@ -149,10 +191,10 @@ export function normalizeBudget(budget: VTEXBudget): NormalizedData {
   const items: NormalizedItem[] = budget.items.map((item) => {
     // sellingPrice tem prioridade (preço de venda com descontos)
     const unitPrice = (item.sellingPrice ?? item.price) * priceMultiplier;
-    const totalPrice = item.totalPrice 
+    const totalPrice = item.totalPrice
       ? item.totalPrice * priceMultiplier
       : unitPrice * item.quantity;
-    
+
     return {
       skuId: item.skuId,
       name: item.name,
@@ -174,12 +216,18 @@ export function normalizeBudget(budget: VTEXBudget): NormalizedData {
   // Normalizar promoções
   const promotions = normalizeBudgetPromotions(budget, priceMultiplier);
 
+  // Extrair marketing tags do orçamento
+  const marketingTags = extractBudgetMarketingTags(budget);
+
   return {
     items,
     totals,
     shipping,
     promotions,
-    context: budget.context,
+    context: {
+      ...budget.context,
+      marketingTags,
+    },
   };
 }
 
@@ -244,7 +292,7 @@ function normalizeBudgetTotals(budget: VTEXBudget, priceMultiplier: number): Nor
 
   // Calcular valor do frete
   let shippingValue = 0;
-  
+
   if (typeof budget.shipping === 'number') {
     shippingValue = budget.shipping;
     // Se for EXP, adicionar shippingDeliveryValue
@@ -260,10 +308,10 @@ function normalizeBudgetTotals(budget: VTEXBudget, priceMultiplier: number): Nor
   // Calcular valor do desconto
   // Prioridade: priceTags dos itens > campo "discounts" > totals.discount
   let discountsValue = 0;
-  
+
   // 1. Tentar calcular a partir dos priceTags dos itens
   const priceTagsDiscount = calculateDiscountsFromPriceTags(budget.items);
-  
+
   if (priceTagsDiscount > 0) {
     discountsValue = priceTagsDiscount;
     console.log(`[Normalizer] Desconto calculado via priceTags: ${discountsValue}`);
@@ -314,15 +362,15 @@ function extractPostalCodeFromAddress(address?: { postalCode?: string }): string
  */
 function normalizeBudgetDeliveryType(budget: VTEXBudget): string {
   const parts: string[] = [];
-  
+
   if (budget.deliveryType) {
     parts.push(budget.deliveryType);
   }
-  
+
   if (budget.shippingType) {
     parts.push(budget.shippingType);
   }
-  
+
   return parts.length > 0 ? parts.join('/') : 'unknown';
 }
 
@@ -338,27 +386,27 @@ function normalizeBudgetShipping(
   priceMultiplier: number
 ): NormalizedShipping | null {
   // Extrair CEP do campo address (prioridade)
-  const postalCode = extractPostalCodeFromAddress(budget.address) || 
-                     budget.shippingData?.postalCode || 
-                     '';
-  
+  const postalCode = extractPostalCodeFromAddress(budget.address) ||
+    budget.shippingData?.postalCode ||
+    '';
+
   // Se não tem dados de shipping nem CEP, retorna null
-  const hasShippingData = budget.shipping !== undefined || 
-                          budget.shippingType || 
-                          budget.deliveryType ||
-                          budget.address ||
-                          postalCode;
-  
+  const hasShippingData = budget.shipping !== undefined ||
+    budget.shippingType ||
+    budget.deliveryType ||
+    budget.address ||
+    postalCode;
+
   if (!hasShippingData && !budget.shippingData) return null;
 
   // Calcular valor do frete
   // shipping = valor base (CIF/PDO)
   // shippingDeliveryValue = diferença para EXP
   let shippingValue = 0;
-  
+
   if (typeof budget.shipping === 'number') {
     shippingValue = budget.shipping;
-    
+
     // Se for entrega expressa (EXP), adicionar shippingDeliveryValue
     if (budget.deliveryType === 'EXP' && budget.shippingDeliveryValue) {
       shippingValue += budget.shippingDeliveryValue;
@@ -369,9 +417,9 @@ function normalizeBudgetShipping(
   }
 
   // Tipo de entrega normalizado
-  const deliveryType = normalizeBudgetDeliveryType(budget) || 
-                       budget.shippingData?.deliveryType || 
-                       'unknown';
+  const deliveryType = normalizeBudgetDeliveryType(budget) ||
+    budget.shippingData?.deliveryType ||
+    'unknown';
 
   // Usar address do orçamento ou shippingData como fallback
   const addressData = budget.address || budget.shippingData?.address;
@@ -404,4 +452,20 @@ function normalizeBudgetPromotions(
     name: promo.name,
     value: promo.value * priceMultiplier,
   }));
+}
+
+/**
+ * Extrai marketing tags do Budget
+ * 
+ * @param budget Budget do Master Data
+ * @returns Array de marketing tags normalizadas (lowercase)
+ */
+function extractBudgetMarketingTags(budget: VTEXBudget): string[] {
+  if (!budget.marketingTags || !Array.isArray(budget.marketingTags)) {
+    return [];
+  }
+
+  return budget.marketingTags
+    .filter((tag): tag is string => typeof tag === 'string' && tag.length > 0)
+    .map(tag => tag.trim().toLowerCase());
 }

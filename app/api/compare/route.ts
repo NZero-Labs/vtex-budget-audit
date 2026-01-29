@@ -21,6 +21,7 @@ import {
   compareTotals,
   compareShipping,
   comparePromotions,
+  compareMarketingTags,
   generateSummary,
 } from '@/lib/compare/compareUtils';
 import { ComparisonResult, ApiError } from '@/lib/compare/types';
@@ -138,8 +139,13 @@ export async function POST(request: NextRequest): Promise<NextResponse<Compariso
     const shippingDiff = compareShipping(normalizedBudget.shipping, normalizedCart.shipping);
     const promoDiffs = comparePromotions(normalizedBudget.promotions, normalizedCart.promotions);
 
+    // Comparar marketing tags (Bonifiq e outras)
+    const budgetMarketingTags = normalizedBudget.context?.marketingTags || [];
+    const cartMarketingTags = normalizedCart.context?.marketingTags || [];
+    const marketingTagDiffs = compareMarketingTags(budgetMarketingTags, cartMarketingTags);
+
     // 6. Gerar resumo
-    const summary = generateSummary(itemDiffs, totalsDiff, shippingDiff, promoDiffs);
+    const summary = generateSummary(itemDiffs, totalsDiff, shippingDiff, promoDiffs, marketingTagDiffs);
 
     // 7. Montar resultado
     const result: ComparisonResult = {
@@ -148,6 +154,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<Compariso
       totalsDiff,
       shippingDiff,
       promoDiffs,
+      marketingTagDiffs,
       metadata: {
         orderFormId,
         budgetId: String(idBudget),
