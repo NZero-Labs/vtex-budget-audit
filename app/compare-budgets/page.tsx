@@ -212,11 +212,17 @@ export default function CompareBudgetsPage() {
 
           {/* Promoções */}
           {result.promoDiffs.length > 0 && (
-            <PromoDiffs promoDiffs={result.promoDiffs} />
+            <PromoDiffs 
+              promoDiffs={result.promoDiffs} 
+              labels={{ left: 'Orçamento 1', right: 'Orçamento 2' }}
+            />
           )}
 
           {/* Entrega */}
-          <ShippingDiffs shippingDiff={result.shippingDiff} />
+          <ShippingDiffs 
+            shippingDiff={result.shippingDiff} 
+            labels={{ left: 'Orçamento 1', right: 'Orçamento 2' }}
+          />
 
           {/* Legenda */}
           <DiffLegend />

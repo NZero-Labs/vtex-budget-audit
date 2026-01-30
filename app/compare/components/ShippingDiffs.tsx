@@ -11,9 +11,18 @@ import { formatBRL, formatPercent, formatCEP } from '@/lib/utils/formatters';
 
 interface ShippingDiffsProps {
   shippingDiff: ShippingDiff | null;
+  /** Labels customizados para os lados da comparação */
+  labels?: {
+    left: string;
+    right: string;
+  };
 }
 
-export function ShippingDiffs({ shippingDiff }: ShippingDiffsProps) {
+export function ShippingDiffs({ shippingDiff, labels }: ShippingDiffsProps) {
+  // Labels padrão para Budget vs Cart
+  const leftLabel = labels?.left || 'Orçamento';
+  const rightLabel = labels?.right || 'Carrinho';
+
   if (!shippingDiff) {
     return (
       <Card title="Dados de Entrega">
@@ -48,13 +57,13 @@ export function ShippingDiffs({ shippingDiff }: ShippingDiffsProps) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <span className="text-sm font-medium text-[#575756] dark:text-white/80 block mb-1">Orçamento:</span>
+              <span className="text-sm font-medium text-[#575756] dark:text-white/80 block mb-1">{leftLabel}:</span>
               <p className="font-mono font-semibold text-base text-[#3c3c3b] dark:text-white">
                 {shippingDiff.budgetPostalCode ? formatCEP(shippingDiff.budgetPostalCode) : '-'}
               </p>
             </div>
             <div>
-              <span className="text-sm font-medium text-[#575756] dark:text-white/80 block mb-1">Carrinho:</span>
+              <span className="text-sm font-medium text-[#575756] dark:text-white/80 block mb-1">{rightLabel}:</span>
               <p className="font-mono font-semibold text-base text-[#3c3c3b] dark:text-white">
                 {shippingDiff.cartPostalCode ? formatCEP(shippingDiff.cartPostalCode) : '-'}
               </p>
@@ -74,11 +83,11 @@ export function ShippingDiffs({ shippingDiff }: ShippingDiffsProps) {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <span className="text-sm font-medium text-[#575756] dark:text-white/80 block mb-1">Orçamento:</span>
+              <span className="text-sm font-medium text-[#575756] dark:text-white/80 block mb-1">{leftLabel}:</span>
               <p className="font-semibold text-base text-[#3c3c3b] dark:text-white">{shippingDiff.budgetDeliveryType || '-'}</p>
             </div>
             <div>
-              <span className="text-sm font-medium text-[#575756] dark:text-white/80 block mb-1">Carrinho:</span>
+              <span className="text-sm font-medium text-[#575756] dark:text-white/80 block mb-1">{rightLabel}:</span>
               <p className="font-semibold text-base text-[#3c3c3b] dark:text-white">{shippingDiff.cartDeliveryType || '-'}</p>
             </div>
           </div>
@@ -91,7 +100,7 @@ export function ShippingDiffs({ shippingDiff }: ShippingDiffsProps) {
           <span className="text-sm font-semibold text-[#3c3c3b] dark:text-white">Valor do Frete</span>
           {Math.abs(shippingDiff.shippingValueDiff.diff) > 0.01 ? (
             <Badge variant="warning">
-              {shippingDiff.shippingValueDiff.diff > 0 ? 'Maior no carrinho' : 'Menor no carrinho'}
+              {shippingDiff.shippingValueDiff.diff > 0 ? `Maior no ${rightLabel.toLowerCase()}` : `Menor no ${rightLabel.toLowerCase()}`}
             </Badge>
           ) : (
             <Badge variant="success">Igual</Badge>
@@ -99,11 +108,11 @@ export function ShippingDiffs({ shippingDiff }: ShippingDiffsProps) {
         </div>
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <span className="text-sm font-medium text-[#575756] dark:text-white/80 block mb-1">Orçamento:</span>
+            <span className="text-sm font-medium text-[#575756] dark:text-white/80 block mb-1">{leftLabel}:</span>
             <p className="font-bold text-lg text-[#3c3c3b] dark:text-white">{formatBRL(shippingDiff.shippingValueDiff.budget)}</p>
           </div>
           <div>
-            <span className="text-sm font-medium text-[#575756] dark:text-white/80 block mb-1">Carrinho:</span>
+            <span className="text-sm font-medium text-[#575756] dark:text-white/80 block mb-1">{rightLabel}:</span>
             <p className="font-bold text-lg text-[#3c3c3b] dark:text-white">{formatBRL(shippingDiff.shippingValueDiff.cart)}</p>
           </div>
           <div>
@@ -136,7 +145,7 @@ export function ShippingDiffs({ shippingDiff }: ShippingDiffsProps) {
       {!hasDiff && (
         <div className="mt-4 p-4 bg-green-main/5 rounded-lg">
           <p className="text-sm font-medium text-green-main">
-            Dados de entrega alinhados entre orçamento e carrinho.
+            Dados de entrega alinhados entre {leftLabel.toLowerCase()} e {rightLabel.toLowerCase()}.
           </p>
         </div>
       )}

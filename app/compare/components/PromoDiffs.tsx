@@ -11,9 +11,18 @@ import { formatBRL } from '@/lib/utils/formatters';
 
 interface PromoDiffsProps {
   promoDiffs: PromoDiff[];
+  /** Labels customizados para os lados da comparação */
+  labels?: {
+    left: string;
+    right: string;
+  };
 }
 
-export function PromoDiffs({ promoDiffs }: PromoDiffsProps) {
+export function PromoDiffs({ promoDiffs, labels }: PromoDiffsProps) {
+  // Labels padrão para Budget vs Cart
+  const leftLabel = labels?.left || 'Orçamento';
+  const rightLabel = labels?.right || 'Carrinho';
+
   if (promoDiffs.length === 0) {
     return null;
   }
@@ -61,13 +70,13 @@ export function PromoDiffs({ promoDiffs }: PromoDiffsProps) {
             <div className="mt-3 flex flex-wrap gap-4 text-sm">
               {promo.budgetValue !== undefined && (
                 <div>
-                  <span className="text-grey-medium">Orçamento: </span>
+                  <span className="text-grey-medium">{leftLabel}: </span>
                   <span className="font-medium text-brand-black">{formatBRL(promo.budgetValue)}</span>
                 </div>
               )}
               {promo.cartValue !== undefined && (
                 <div>
-                  <span className="text-grey-medium">Carrinho: </span>
+                  <span className="text-grey-medium">{rightLabel}: </span>
                   <span className="font-medium text-brand-black">{formatBRL(promo.cartValue)}</span>
                 </div>
               )}
@@ -94,7 +103,7 @@ export function PromoDiffs({ promoDiffs }: PromoDiffsProps) {
       {!hasIssues && (
         <div className="mt-4 p-3 bg-green-main/5 rounded-lg">
           <p className="text-sm text-green-main">
-            Todas as promoções estão alinhadas entre orçamento e carrinho.
+            Todas as promoções estão alinhadas entre {leftLabel.toLowerCase()} e {rightLabel.toLowerCase()}.
           </p>
         </div>
       )}
