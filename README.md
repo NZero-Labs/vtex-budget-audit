@@ -6,9 +6,11 @@ Dashboard para comparar orçamentos (Master Data) com carrinhos (OrderForm) da V
 
 Esta aplicação permite:
 
-- Comparar orçamentos armazenados no Master Data com carrinhos ativos (OrderForm)
+- **Comparar Orçamento vs Carrinho**: Verificar se um carrinho VTEX está alinhado com o orçamento
+- **Comparar Orçamento vs Orçamento**: Comparar dois orçamentos para identificar diferenças de preço e peso
 - Identificar divergências de itens, preços, quantidades, promoções e frete
-- Visualizar impacto financeiro das diferenças
+- Visualizar peso individual de cada item e peso total do orçamento
+- Entender qual orçamento é mais caro e por quê
 - Exportar relatório em CSV
 
 ## Tecnologias
@@ -241,30 +243,57 @@ npm run test:run
 
 ## Como Usar a Aplicação
 
-1. **Acesse `/compare`** (ou a raiz, que redireciona)
+### Página Inicial
 
-2. **Informe os dados:**
+Após o login, você será direcionado para a página de seleção (`/home`) onde pode escolher:
+
+- **Orçamento vs Carrinho**: Compare um orçamento com um carrinho VTEX ativo
+- **Orçamento vs Orçamento**: Compare dois orçamentos entre si
+
+### Comparar Orçamento vs Carrinho (`/compare`)
+
+1. **Informe os dados:**
    - **URL do Carrinho**: Cole a URL do checkout VTEX ou o `orderFormId` diretamente
    - **ID do Orçamento**: ID do documento no Master Data
 
-3. **Clique em Comparar**
+2. **Clique em Comparar**
 
-4. **Analise os resultados:**
+3. **Analise os resultados:**
    - Cards de resumo com totais
    - Tabela de itens com diferenças destacadas
-   - Seção de promoções
+   - Seção de promoções e marketing tags
    - Dados de entrega
    - Legenda de criticidade
 
-5. **Exporte se necessário:** Clique em "Exportar CSV" para download
+4. **Exporte se necessário:** Clique em "Exportar CSV" para download
+
+### Comparar Orçamento vs Orçamento (`/compare-budgets`)
+
+1. **Informe os IDs:**
+   - **ID do Orçamento 1**: Primeiro orçamento para comparação
+   - **ID do Orçamento 2**: Segundo orçamento para comparação
+
+2. **Clique em Comparar Orçamentos**
+
+3. **Analise os resultados:**
+   - Cards de resumo com totais lado a lado
+   - **Peso total** de cada orçamento (calculado via API de Catálogo)
+   - **Análise de preço** explicando por que um é mais caro
+   - Tabela de itens com peso individual e diferenças
+   - Seção de promoções
+   - Legenda de criticidade
+
+4. **Exporte se necessário:** Clique em "Exportar CSV" para download
 
 ## Estrutura do Projeto
 
 ```
 vtex-budget-audit/
 ├── app/
+│   ├── home/
+│   │   └── page.tsx              # Página de seleção de tipo de comparação
 │   ├── compare/
-│   │   ├── page.tsx              # Página principal
+│   │   ├── page.tsx              # Orçamento vs Carrinho
 │   │   └── components/           # Componentes da página
 │   │       ├── InputForm.tsx
 │   │       ├── SummaryCards.tsx
@@ -272,19 +301,31 @@ vtex-budget-audit/
 │   │       ├── PromoDiffs.tsx
 │   │       ├── ShippingDiffs.tsx
 │   │       └── DiffLegend.tsx
+│   ├── compare-budgets/
+│   │   ├── page.tsx              # Orçamento vs Orçamento
+│   │   └── components/           # Componentes da página
+│   │       ├── BudgetInputForm.tsx
+│   │       ├── BudgetComparisonSummary.tsx
+│   │       ├── BudgetDiffTable.tsx
+│   │       ├── WeightSummary.tsx
+│   │       └── PriceBreakdown.tsx
 │   ├── api/
-│   │   └── compare/
-│   │       └── route.ts          # API Route
+│   │   ├── compare/
+│   │   │   └── route.ts          # API Orçamento vs Carrinho
+│   │   └── compare-budgets/
+│   │       └── route.ts          # API Orçamento vs Orçamento
 │   ├── layout.tsx
-│   └── page.tsx
+│   └── page.tsx                  # Redireciona para /home
 ├── lib/
 │   ├── vtex/
 │   │   ├── config.ts             # Configuração VTEX
 │   │   ├── orderForm.ts          # Cliente Checkout API
 │   │   ├── masterData.ts         # Cliente Master Data API
+│   │   ├── catalog.ts            # Cliente Catalog API (peso dos SKUs)
 │   │   └── mocks.ts              # Dados mockados
 │   ├── compare/
 │   │   ├── types.ts              # Tipagens
+│   │   ├── budgetCompare.ts      # Lógica de comparação Budget vs Budget
 │   │   ├── normalizers.ts        # Normalização de dados
 │   │   └── compareUtils.ts       # Lógica de comparação
 │   └── utils/

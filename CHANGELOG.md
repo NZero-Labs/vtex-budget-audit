@@ -9,6 +9,19 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Added
 
+- **Comparação Budget vs Budget**: Nova funcionalidade para comparar dois orçamentos
+  - Nova página `/compare-budgets` com formulário para dois IDs de orçamento
+  - Componentes: `BudgetInputForm`, `BudgetComparisonSummary`, `BudgetDiffTable`, `WeightSummary`, `PriceBreakdown`
+  - API route `/api/compare-budgets` para processar comparação
+  - Novas tipagens: `BudgetComparisonResult`, `BudgetItemDiff`, `BudgetTotalsDiff`, `PriceAnalysis`, `WeightInfo`
+  - Análise de preço explicando por que um orçamento é mais caro que o outro
+- **Informações de Peso dos SKUs**: Integração com API de Catálogo VTEX
+  - Novo cliente `lib/vtex/catalog.ts` com `getSkuDetails` e `getMultipleSkuDetails`
+  - Peso unitário e peso total exibidos na tabela de itens
+  - Card de resumo de peso total por orçamento
+- **Página de Seleção (Home)**: Nova página `/home` após o login
+  - Cards de seleção para escolher tipo de comparação
+  - Orçamento vs Carrinho ou Orçamento vs Orçamento
 - **Suporte a Marketing Tags (Bonifiq)**: Verificação de tags de marketing entre orçamento e carrinho
   - Nova tipagem `MarketingTagDiff` para diferenças de marketing tags
   - Campo `marketingTags` adicionado a `VTEXBudget`
@@ -21,6 +34,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Changed
 
+- Página raiz (`/`) agora redireciona para `/home` ao invés de `/compare`
+- Login bem-sucedido redireciona para `/home`
+- Rotas protegidas agora incluem `/home` e `/compare-budgets`
 - `NormalizedData.context` agora inclui campo `marketingTags`
 - `generateSummary` considera impacto de marketing tags no cálculo de criticidade
 
