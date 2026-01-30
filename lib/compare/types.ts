@@ -603,3 +603,215 @@ export interface ApiError {
   details?: unknown;
   requestId?: string;
 }
+
+// =============================================================================
+// Tipos para Comparação Budget vs Budget
+// =============================================================================
+
+/**
+ * Informações de peso individual de um item
+ */
+export interface ItemWeight {
+  /** ID do SKU */
+  skuId: string;
+  /** Nome do produto */
+  name: string;
+  /** Quantidade no orçamento */
+  quantity: number;
+  /** Peso unitário em kg */
+  unitWeight: number;
+  /** Peso total (unitWeight * quantity) em kg */
+  totalWeight: number;
+}
+
+/**
+ * Informações de peso agregadas do orçamento
+ */
+export interface WeightInfo {
+  /** Peso total do orçamento em kg */
+  totalWeight: number;
+  /** Peso individual por item */
+  itemWeights: ItemWeight[];
+}
+
+/**
+ * Comparação de peso entre dois orçamentos
+ */
+export interface WeightComparison {
+  /** Peso do orçamento 1 */
+  budget1: WeightInfo;
+  /** Peso do orçamento 2 */
+  budget2: WeightInfo;
+  /** Diferença de peso total (budget2 - budget1) */
+  difference: number;
+  /** Qual orçamento é mais pesado */
+  heavier: 'budget1' | 'budget2' | 'equal';
+}
+
+/**
+ * Item do breakdown de preço explicando diferenças
+ */
+export interface PriceBreakdownItem {
+  /** Categoria da diferença */
+  category: 'items' | 'shipping' | 'discounts' | 'taxes';
+  /** Descrição da diferença */
+  description: string;
+  /** Valor no orçamento 1 */
+  budget1Value: number;
+  /** Valor no orçamento 2 */
+  budget2Value: number;
+  /** Diferença absoluta (budget2 - budget1) */
+  difference: number;
+  /** Impacto no preço final */
+  impact: 'cheaper' | 'expensive' | 'neutral';
+}
+
+/**
+ * Análise de preço explicando por que um orçamento é mais caro
+ */
+export interface PriceAnalysis {
+  /** Qual orçamento é mais barato */
+  cheaperBudget: 'budget1' | 'budget2' | 'equal';
+  /** Diferença total de preço (budget2.total - budget1.total) */
+  priceDifference: number;
+  /** Breakdown detalhado das diferenças */
+  breakdown: PriceBreakdownItem[];
+}
+
+/**
+ * Diferença de item na comparação Budget vs Budget
+ */
+export interface BudgetItemDiff {
+  /** ID do SKU */
+  skuId: string;
+  /** Nome do produto */
+  name: string;
+  /** Status da comparação */
+  status: 'match' | 'price_diff' | 'quantity_diff' | 'quantity_price_diff' | 'only_in_budget1' | 'only_in_budget2';
+  /** Quantidade no orçamento 1 */
+  budget1Qty?: number;
+  /** Quantidade no orçamento 2 */
+  budget2Qty?: number;
+  /** Preço unitário no orçamento 1 */
+  budget1Price?: number;
+  /** Preço unitário no orçamento 2 */
+  budget2Price?: number;
+  /** Peso unitário em kg */
+  unitWeight: number;
+  /** Diferença absoluta de preço */
+  priceDiffAbs?: number;
+  /** Diferença percentual de preço */
+  priceDiffPct?: number;
+  /** Diferença de quantidade */
+  qtyDiff?: number;
+  /** Nível de impacto */
+  impact: ImpactLevel;
+  /** Explicação da diferença */
+  explanation?: string;
+}
+
+/**
+ * Resumo da comparação Budget vs Budget
+ */
+export interface BudgetComparisonSummary {
+  /** Total de divergências encontradas */
+  totalDiffs: number;
+  /** Divergências críticas */
+  criticalDiffs: number;
+  /** Divergências de alta prioridade */
+  highDiffs: number;
+  /** Divergências médias */
+  mediumDiffs: number;
+  /** Diferença financeira total */
+  financialDifference: number;
+  /** Criticidade geral */
+  overallImpact: ImpactLevel;
+}
+
+/**
+ * Diferença de totais entre dois orçamentos
+ */
+export interface BudgetTotalsDiff {
+  subtotal: {
+    budget1: number;
+    budget2: number;
+    diff: number;
+    diffPct: number;
+  };
+  discounts: {
+    budget1: number;
+    budget2: number;
+    diff: number;
+    diffPct: number;
+  };
+  shipping: {
+    budget1: number;
+    budget2: number;
+    diff: number;
+    diffPct: number;
+  };
+  taxes: {
+    budget1: number;
+    budget2: number;
+    diff: number;
+    diffPct: number;
+  };
+  total: {
+    budget1: number;
+    budget2: number;
+    diff: number;
+    diffPct: number;
+  };
+  /** Impacto geral */
+  impact: ImpactLevel;
+  /** Explicação */
+  explanation?: string;
+}
+
+/**
+ * Metadados da comparação Budget vs Budget
+ */
+export interface BudgetComparisonMetadata {
+  /** ID do orçamento 1 */
+  budget1Id: string;
+  /** ID do orçamento 2 */
+  budget2Id: string;
+  /** Data/hora da comparação */
+  comparedAt: string;
+  /** ID único da requisição */
+  requestId: string;
+}
+
+/**
+ * Resultado completo da comparação Budget vs Budget
+ */
+export interface BudgetComparisonResult {
+  /** Resumo geral */
+  summary: BudgetComparisonSummary;
+  /** Diferenças de itens */
+  itemDiffs: BudgetItemDiff[];
+  /** Diferenças de totais */
+  totalsDiff: BudgetTotalsDiff;
+  /** Diferenças de entrega */
+  shippingDiff: ShippingDiff | null;
+  /** Diferenças de promoções */
+  promoDiffs: PromoDiff[];
+  /** Análise de preço (por que um é mais caro) */
+  priceAnalysis: PriceAnalysis;
+  /** Informações de peso */
+  weightInfo: WeightComparison;
+  /** Diferenças de marketing tags */
+  marketingTagDiffs: MarketingTagDiff[];
+  /** Metadados */
+  metadata: BudgetComparisonMetadata;
+}
+
+/**
+ * Payload de entrada para comparação Budget vs Budget
+ */
+export interface CompareBudgetsRequest {
+  /** ID do primeiro orçamento */
+  idBudget1: string | number;
+  /** ID do segundo orçamento */
+  idBudget2: string | number;
+}

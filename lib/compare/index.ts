@@ -5,3 +5,4 @@
 export * from './types';
 export * from './normalizers';
 export * from './compareUtils';
+export * from './budgetCompare';
