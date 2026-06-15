@@ -6,7 +6,7 @@
  */
 
 import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
+import { createPrismaClient } from '../lib/db/client';
 
 async function setAdmin() {
   const email = process.argv[2];
@@ -23,9 +23,7 @@ async function setAdmin() {
     process.exit(1);
   }
 
-  const prisma = new PrismaClient({
-    accelerateUrl: process.env.BU_PRISMA_DATABASE_URL,
-  });
+  const prisma = createPrismaClient();
 
   try {
     // Verifica se usuário existe

@@ -7,8 +7,8 @@
  */
 
 import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { createPrismaClient } from '../lib/db/client';
 
 // Parse argumentos da linha de comando
 function parseArgs(): { email: string; password: string; name: string } {
@@ -46,10 +46,7 @@ async function seedUser() {
     process.exit(1);
   }
 
-  // Cria cliente Prisma com URL do Accelerate
-  const prisma = new PrismaClient({
-    accelerateUrl: process.env.BU_PRISMA_DATABASE_URL,
-  });
+  const prisma = createPrismaClient();
 
   console.log(`Criando usuário: ${email}`);
 
