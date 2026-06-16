@@ -7,8 +7,11 @@
  */
 
 import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
+import { ShieldCheck, UserCheck, Users, UserPlus } from "lucide-react";
 import { UserTable, UserForm } from "./components";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface User {
   id: number;
@@ -122,107 +125,27 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/compare"
-            className="inline-flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-            title="Voltar para Comparação"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
-            </svg>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+    <div className="mx-auto w-full max-w-7xl space-y-6">
+      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
               Gerenciar Usuários
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="mt-1 text-sm text-muted-foreground">
               Adicione, edite ou desative usuários do sistema
             </p>
-          </div>
         </div>
-        <button
-          onClick={handleCreate}
-          className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors"
-        >
-          <svg
-            className="w-5 h-5 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            />
-          </svg>
-          Novo Usuário
-        </button>
+        <Button className="w-full sm:w-auto" onClick={handleCreate}><UserPlus /> Novo usuário</Button>
       </div>
 
       {/* Erro */}
       {error && (
-        <div className="p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
-          <div className="flex items-center">
-            <svg
-              className="w-5 h-5 text-red-500 mr-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span className="text-red-700 dark:text-red-300">{error}</span>
-          </div>
-        </div>
+        <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
       )}
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-card p-4">
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            Total de Usuários
-          </div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white">
-            {users.length}
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-card p-4">
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            Usuários Ativos
-          </div>
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-            {users.filter((u) => u.isActive).length}
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-card p-4">
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            Administradores
-          </div>
-          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-            {users.filter((u) => u.role === "ADMIN").length}
-          </div>
-        </div>
+      <div className="grid min-w-0 grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
+        {[{label:"Total de usuários",value:users.length,icon:Users},{label:"Usuários ativos",value:users.filter((u)=>u.isActive).length,icon:UserCheck},{label:"Administradores",value:users.filter((u)=>u.role==="ADMIN").length,icon:ShieldCheck}].map((item)=><Card key={item.label}><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{item.label}</CardTitle><item.icon className="size-4 text-primary" /></CardHeader><CardContent><div className="text-3xl font-semibold">{item.value}</div></CardContent></Card>)}
       </div>
 
       {/* Tabela de usuários */}

@@ -25,6 +25,7 @@ import {
   generateSummary,
 } from '@/lib/compare/compareUtils';
 import { ComparisonResult, ApiError } from '@/lib/compare/types';
+import { auth } from '@/lib/auth/auth';
 
 /**
  * Schema de validação do request
@@ -45,6 +46,11 @@ function generateRequestId(): string {
  * Handler POST para comparação
  */
 export async function POST(request: NextRequest): Promise<NextResponse<ComparisonResult | ApiError>> {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json<ApiError>({ error: 'UNAUTHORIZED', message: 'Autenticação necessária' }, { status: 401 });
+  }
+
   const requestId = generateRequestId();
   const startTime = Date.now();
 

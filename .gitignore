@@ -121,4 +121,6 @@ next-env.d.ts
 .tmp/
 .temp/
 tmp/
-temp/git 
+temp/git
+photos/
+*.Zone.Identifier
