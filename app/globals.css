@@ -2,256 +2,200 @@
 @tailwind components;
 @tailwind utilities;
 
-/**
- * Design System: Amara NZero
- * Identidade visual corporativa B2B - tecnologia e sustentabilidade
- */
+@layer base {
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 160 18% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 160 18% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 18% 10%;
+    --primary: 144 100% 29%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 144 18% 93%;
+    --secondary-foreground: 160 20% 14%;
+    --muted: 150 12% 94%;
+    --muted-foreground: 155 8% 42%;
+    --accent: 76 80% 45%;
+    --accent-foreground: 160 24% 10%;
+    --destructive: 0 72% 51%;
+    --border: 150 12% 87%;
+    --input: 150 12% 87%;
+    --ring: 144 100% 29%;
+    --chart-1: 144 100% 29%;
+    --chart-2: 76 80% 45%;
+    --chart-3: 198 77% 48%;
+    --chart-4: 43 100% 50%;
+    --chart-5: 215 59% 45%;
+    --radius: 0.75rem;
+    --sidebar: 156 20% 96%;
+    --sidebar-foreground: 160 18% 12%;
+    --sidebar-primary: 144 100% 29%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 144 22% 90%;
+    --sidebar-accent-foreground: 150 30% 14%;
+    --sidebar-border: 150 12% 86%;
+    --sidebar-ring: 144 100% 29%;
+  }
 
-/* Importar fonte Lato do Google Fonts */
-@import url("https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;700;900&display=swap");
+  .dark {
+    --background: 156 22% 6%;
+    --foreground: 145 14% 94%;
+    --card: 156 18% 9%;
+    --card-foreground: 145 14% 94%;
+    --popover: 156 18% 9%;
+    --popover-foreground: 145 14% 94%;
+    --primary: 142 72% 45%;
+    --primary-foreground: 156 30% 5%;
+    --secondary: 155 14% 15%;
+    --secondary-foreground: 145 14% 94%;
+    --muted: 155 12% 14%;
+    --muted-foreground: 150 8% 64%;
+    --accent: 76 74% 50%;
+    --accent-foreground: 156 30% 5%;
+    --destructive: 0 68% 56%;
+    --border: 150 12% 18%;
+    --input: 150 12% 20%;
+    --ring: 142 72% 45%;
+    --sidebar: 158 24% 7%;
+    --sidebar-foreground: 145 14% 92%;
+    --sidebar-primary: 142 72% 45%;
+    --sidebar-primary-foreground: 156 30% 5%;
+    --sidebar-accent: 154 16% 14%;
+    --sidebar-accent-foreground: 145 14% 94%;
+    --sidebar-border: 154 12% 16%;
+    --sidebar-ring: 142 72% 45%;
+  }
 
-:root {
-  /* Primary Colors */
-  --green-main: #00953b;
-  --green-light: #76bc21;
-  --green-lime: #c1d116;
+  * {
+    @apply border-border outline-ring/50;
+  }
 
-  /* Secondary Colors */
-  --brand-black: #3c3c3b;
-  --grey-dark: #575756;
-  --grey-medium: #9d9c9c;
+  html {
+    @apply bg-background font-sans;
+  }
 
-  /* Complementary */
-  --brand-yellow: #ffc000;
-  --brand-cyan: #1c9bd8;
-  --brand-blue: #2e75b6;
+  body {
+    @apply min-h-screen bg-background text-foreground antialiased;
+  }
 
-  /* Status */
-  --status-success: #00953b;
-  --status-warning: #ffc000;
-  --status-error: #d32f2f;
-  --status-info: #1c9bd8;
-
-  /* Dashboard - Light Mode */
-  --background: #ffffff;
-  --foreground: #3c3c3b;
-  --card-bg: #f9f9f9;
-  --row-hover: #f1f7f3;
-  --border-color: #e5e5e5;
-  --input-bg: #ffffff;
-
-  /* UI Tokens */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-modal: 0 8px 24px rgba(0, 0, 0, 0.12);
+  a {
+    @apply transition-colors;
+  }
 }
 
-/* Dark mode via class */
-.dark {
-  --background: #111827;
-  --foreground: #f3f4f6;
-  --card-bg: #1f2937;
-  --row-hover: #374151;
-  --border-color: #374151;
-  --input-bg: #1f2937;
-  --brand-black: #f3f4f6;
-  --grey-dark: #d1d5db;
-  --grey-medium: #9ca3af;
-}
+@layer utilities {
+  @keyframes enter {
+    from {
+      opacity: var(--tw-enter-opacity, 1);
+      transform: translate3d(
+          var(--tw-enter-translate-x, 0),
+          var(--tw-enter-translate-y, 0),
+          0
+        )
+        scale(var(--tw-enter-scale, 1));
+    }
+  }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: "Lato", system-ui, sans-serif;
-  font-weight: 400;
-  font-size: 16px;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  @keyframes exit {
+    to {
+      opacity: var(--tw-exit-opacity, 1);
+      transform: translate3d(
+          var(--tw-exit-translate-x, 0),
+          var(--tw-exit-translate-y, 0),
+          0
+        )
+        scale(var(--tw-exit-scale, 1));
+    }
+  }
 
-/* Typography - usando Lato como fonte principal para dados/dashboards */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: "Lato", system-ui, sans-serif;
-  font-weight: 700;
-  color: var(--brand-black);
-  line-height: 1.3;
-  letter-spacing: -0.01em;
-}
+  .animate-in {
+    animation-name: enter;
+    animation-duration: 150ms;
+    animation-timing-function: ease-out;
+    animation-fill-mode: both;
+  }
 
-h1 {
-  font-size: 2rem;
-}
-h2 {
-  font-size: 1.5rem;
-}
-h3 {
-  font-size: 1.25rem;
-}
-h4 {
-  font-size: 1.125rem;
-}
+  .animate-out {
+    animation-name: exit;
+    animation-duration: 150ms;
+    animation-timing-function: ease-out;
+    animation-fill-mode: both;
+  }
 
-/* Parágrafos e texto corrido */
-p {
-  line-height: 1.7;
-  margin-bottom: 0.75em;
-}
+  .fade-in-0 {
+    --tw-enter-opacity: 0;
+  }
 
-/* Texto secundário com melhor contraste */
-.text-secondary {
-  color: var(--grey-dark);
-}
+  .fade-out-0 {
+    --tw-exit-opacity: 0;
+  }
 
-/* Labels e legendas */
-label,
-.label {
-  font-weight: 500;
-  color: var(--brand-black);
-  font-size: 0.875rem;
-}
+  .zoom-in-95 {
+    --tw-enter-scale: 0.95;
+  }
 
-/* Texto de ajuda/descrição */
-.text-help {
-  color: var(--grey-dark);
-  font-size: 0.8125rem;
-  line-height: 1.5;
-}
+  .zoom-out-95 {
+    --tw-exit-scale: 0.95;
+  }
 
-/* Criticidade - cores para destaque de divergências (adaptado para Amara NZero) */
-.criticality-none {
-  @apply bg-card-bg;
-}
+  .slide-in-from-top-2 {
+    --tw-enter-translate-y: -0.5rem;
+  }
 
-.criticality-low {
-  background-color: rgba(28, 155, 216, 0.1);
-  border-left: 4px solid var(--brand-cyan);
-}
+  .slide-in-from-right-2 {
+    --tw-enter-translate-x: 0.5rem;
+  }
 
-.criticality-medium {
-  background-color: rgba(255, 192, 0, 0.1);
-  border-left: 4px solid var(--brand-yellow);
-}
+  .slide-in-from-bottom-2 {
+    --tw-enter-translate-y: 0.5rem;
+  }
 
-.criticality-high {
-  background-color: rgba(255, 192, 0, 0.2);
-  border-left: 4px solid var(--brand-yellow);
-}
+  .slide-in-from-left-2 {
+    --tw-enter-translate-x: -0.5rem;
+  }
 
-.criticality-critical {
-  background-color: rgba(211, 47, 47, 0.1);
-  border-left: 4px solid var(--status-error);
-}
+  .slide-in-from-top-10 {
+    --tw-enter-translate-y: -2.5rem;
+  }
 
-/* Badge de status - Amara NZero style */
-.badge {
-  @apply inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium;
-}
+  .slide-in-from-right-10 {
+    --tw-enter-translate-x: 2.5rem;
+  }
 
-.badge-match {
-  background-color: rgba(0, 149, 59, 0.15);
-  color: var(--green-main);
-}
+  .slide-in-from-bottom-10 {
+    --tw-enter-translate-y: 2.5rem;
+  }
 
-.badge-warning {
-  background-color: rgba(255, 192, 0, 0.15);
-  color: #b38600;
-}
+  .slide-in-from-left-10 {
+    --tw-enter-translate-x: -2.5rem;
+  }
 
-.badge-error {
-  background-color: rgba(211, 47, 47, 0.15);
-  color: var(--status-error);
-}
+  .slide-out-to-top-10 {
+    --tw-exit-translate-y: -2.5rem;
+  }
 
-.badge-info {
-  background-color: rgba(28, 155, 216, 0.15);
-  color: var(--brand-cyan);
-}
+  .slide-out-to-right-10 {
+    --tw-exit-translate-x: 2.5rem;
+  }
 
-/* Buttons - Primary */
-.btn-primary {
-  @apply px-4 py-2 rounded-md font-medium transition-colors;
-  background-color: var(--green-main);
-  color: white;
-}
+  .slide-out-to-bottom-10 {
+    --tw-exit-translate-y: 2.5rem;
+  }
 
-.btn-primary:hover {
-  background-color: var(--green-light);
-}
+  .slide-out-to-left-10 {
+    --tw-exit-translate-x: -2.5rem;
+  }
 
-/* Buttons - Secondary */
-.btn-secondary {
-  @apply px-4 py-2 rounded-md font-medium transition-colors;
-  background-color: var(--green-light);
-  color: white;
-}
+  .surface-grid {
+    background-image:
+      linear-gradient(hsl(var(--border) / 0.35) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.35) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
 
-.btn-secondary:hover {
-  background-color: var(--green-main);
-}
-
-/* Cards */
-.card {
-  background-color: var(--card-bg);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
-}
-
-/* Tables - Amara NZero style */
-.table-header {
-  background-color: var(--brand-black);
-  color: white;
-}
-
-.table-row:hover {
-  background-color: var(--row-hover);
-}
-
-/* Corporate Gradient */
-.gradient-corporate {
-  background: linear-gradient(to left, var(--green-main), var(--green-lime));
-}
-
-/* Focus states */
-input:focus,
-select:focus,
-textarea:focus,
-button:focus {
-  outline: 2px solid var(--green-main);
-  outline-offset: 2px;
-}
-
-/* Links */
-a {
-  color: var(--brand-cyan);
-}
-
-a:hover {
-  color: var(--brand-blue);
-}
-
-/* Scrollbar customization */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--card-bg);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--grey-medium);
-  border-radius: var(--radius-sm);
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--grey-dark);
+  .criticality-low { @apply border-l-4 border-sky-500 bg-sky-500/5; }
+  .criticality-medium { @apply border-l-4 border-amber-400 bg-amber-400/5; }
+  .criticality-high { @apply border-l-4 border-orange-500 bg-orange-500/5; }
+  .criticality-critical { @apply border-l-4 border-destructive bg-destructive/5; }
 }

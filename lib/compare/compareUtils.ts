@@ -1,6 +1,6 @@
 /**
  * Funções utilitárias para comparação de Budget vs OrderForm
- * 
+ *
  * Implementa a lógica de comparação e cálculo de divergências
  * com classificação de criticidade.
  */
@@ -47,7 +47,7 @@ export function determineImpact(
   const absDiffAbs = Math.abs(diffAbs);
 
   // Crítico: acima dos thresholds configurados
-  if (absDiffPct > percentageThreshold * 10 || absDiffAbs > absoluteThreshold * 2) {
+  if (absDiffPct >= percentageThreshold * 20 || absDiffAbs >= absoluteThreshold * 3) {
     return 'critical';
   }
 
@@ -250,7 +250,7 @@ export function compareTotals(
 
 /**
  * Mapeamento de tipos de entrega do Carrinho para Orçamento
- * 
+ *
  * Carrinho (selectedSla)    -> Orçamento (deliveryType/shippingType)
  * ---------------------------------------------------------------
  * AMARANZ LOGISTICA CAJ     -> PDO/CIF
@@ -416,7 +416,7 @@ export function compareShipping(
 
   if (Math.abs(shippingValueDiff.diff) > 0.01) {
     const valueImpact = determineImpact(shippingValueDiff.diffPct, shippingValueDiff.diff);
-    if (valueImpact !== 'none' && (impact === 'none' || valueImpact === 'critical')) {
+    if (valueImpact !== 'none' && impact === 'none') {
       impact = valueImpact;
     }
     explanationParts.push(
@@ -545,7 +545,7 @@ export const BONIFIQ_TAG = 'usar-pontos-agora';
 
 /**
  * Verifica se uma marketing tag específica está presente
- * 
+ *
  * @param tag Tag a verificar
  * @param budgetTags Tags do orçamento
  * @param cartTags Tags do carrinho
@@ -570,7 +570,7 @@ export function checkMarketingTag(
 /**
  * Compara marketing tags entre orçamento e carrinho
  * Identifica tags presentes em um mas não no outro
- * 
+ *
  * @param budgetTags Tags do orçamento
  * @param cartTags Tags do carrinho
  * @param tagsToCheck Tags específicas para verificar (ex: Bonifiq)
@@ -665,7 +665,7 @@ export function compareMarketingTags(
 /**
  * Verifica especificamente a tag da Bonifiq
  * Retorna resultado detalhado para a promoção "usar-pontos-agora"
- * 
+ *
  * @param budgetTags Tags do orçamento
  * @param cartTags Tags do carrinho
  * @returns Resultado da verificação da tag Bonifiq

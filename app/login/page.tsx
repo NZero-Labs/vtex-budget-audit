@@ -1,59 +1,74 @@
-/**
- * Página de Login
- *
- * Exibe formulário de autenticação com email/senha.
- */
-
+import Image from "next/image";
 import { Suspense } from "react";
+import { ShieldCheck, Sparkles } from "lucide-react";
 import { LoginForm } from "./components/LoginForm";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function LoginPage() {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="w-full max-w-md">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-card border border-gray-200 dark:border-gray-700 p-8">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-green-main/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-8 h-8 text-green-main"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Acesso ao Sistema
-            </h1>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">
-              Entre com suas credenciais para continuar
-            </p>
-          </div>
-
-          {/* Form com Suspense para useSearchParams */}
-          <Suspense
-            fallback={
-              <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-main" />
-              </div>
-            }
-          >
-            <LoginForm />
-          </Suspense>
+    <main className="grid min-h-screen bg-background lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="surface-grid relative hidden overflow-hidden border-r bg-card lg:flex lg:flex-col lg:justify-between lg:p-12">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-accent/10" />
+        <Image
+          src="/logo-amara.png"
+          alt="Amara Net Zero"
+          width={170}
+          height={48}
+          className="relative h-12 w-auto object-contain object-left"
+          priority
+        />
+        <div className="relative max-w-xl space-y-5">
+          <Badge variant="secondary" className="gap-1.5">
+            <Sparkles className="size-3" /> Plataforma interna
+          </Badge>
+          <h1 className="text-4xl font-semibold tracking-tight xl:text-5xl">
+            Operações VTEX com mais contexto e menos atrito.
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            O VTEX Tools reúne utilitários da Amara Net Zero em um workspace
+            seguro, rápido e preparado para crescer.
+          </p>
         </div>
-
-        {/* Footer */}
-        <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-          Acesso restrito a usuários autorizados
+        <p className="relative text-sm text-muted-foreground">
+          Amara Net Zero · Tecnologia e operações
         </p>
-      </div>
-    </div>
+      </section>
+      <section className="flex min-w-0 items-center justify-center p-4 sm:p-6 md:p-10">
+        <Card className="w-full max-w-md border-border/70 shadow-2xl shadow-primary/5">
+          <CardHeader className="space-y-4">
+            <div className="flex size-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <ShieldCheck />
+            </div>
+            <div>
+              <CardTitle className="text-xl sm:text-2xl">Acessar VTEX Tools</CardTitle>
+              <CardDescription>
+                Use suas credenciais corporativas para continuar.
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Suspense
+              fallback={
+                <div className="space-y-4">
+                  <Skeleton className="h-9 w-full" />
+                  <Skeleton className="h-9 w-full" />
+                  <Skeleton className="h-9 w-full" />
+                </div>
+              }
+            >
+              <LoginForm />
+            </Suspense>
+          </CardContent>
+        </Card>
+      </section>
+    </main>
   );
 }

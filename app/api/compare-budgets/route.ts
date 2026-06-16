@@ -18,6 +18,7 @@ import { getMultipleSkuDetails, createWeightMap } from '@/lib/vtex/catalog';
 import { normalizeBudget } from '@/lib/compare/normalizers';
 import { compareBudgets } from '@/lib/compare/budgetCompare';
 import { BudgetComparisonResult, ApiError } from '@/lib/compare/types';
+import { auth } from '@/lib/auth/auth';
 
 /**
  * Schema de validação do request
@@ -38,6 +39,11 @@ function generateRequestId(): string {
  * Handler POST para comparação de dois orçamentos
  */
 export async function POST(request: NextRequest): Promise<NextResponse<BudgetComparisonResult | ApiError>> {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json<ApiError>({ error: 'UNAUTHORIZED', message: 'Autenticação necessária' }, { status: 401 });
+  }
+
   const requestId = generateRequestId();
   const startTime = Date.now();
 

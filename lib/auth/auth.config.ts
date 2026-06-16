@@ -12,7 +12,7 @@ import type { NextAuthConfig } from 'next-auth';
 /**
  * Rotas protegidas que requerem autenticação
  */
-const protectedRoutes = ['/compare', '/compare-budgets', '/admin', '/home'];
+const protectedRoutes = ['/tools', '/compare', '/compare-budgets', '/admin', '/home'];
 
 /**
  * Rotas que requerem role ADMIN
@@ -77,8 +77,7 @@ export const authConfig: NextAuthConfig = {
           return false;
         }
         if (userRole !== 'ADMIN') {
-          // Redireciona para /home se não for admin
-          return Response.redirect(new URL('/home', request.nextUrl));
+          return Response.redirect(new URL('/tools', request.nextUrl));
         }
         return true;
       }
@@ -94,7 +93,7 @@ export const authConfig: NextAuthConfig = {
 
       // Se autenticado e tentando acessar login, redireciona
       if (isLoggedIn && pathname === '/login') {
-        return Response.redirect(new URL('/home', request.nextUrl));
+        return Response.redirect(new URL('/tools', request.nextUrl));
       }
 
       return true;

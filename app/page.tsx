@@ -1,8 +1,4 @@
 import { redirect } from "next/navigation";
-
-/**
- * Página raiz - redireciona para /home (seleção de tipo de comparação)
- */
-export default function Home() {
-  redirect("/home");
+export default function Page() {
+  redirect("/tools");
 }

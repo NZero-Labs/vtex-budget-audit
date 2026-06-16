@@ -6,4 +6,5 @@ export * from './config';
 export * from './orderForm';
 export * from './masterData';
 export * from './catalog';
+export * from './integrators';
 export * from './mocks';

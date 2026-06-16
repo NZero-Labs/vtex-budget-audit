@@ -1,8 +1,4 @@
-/**
- * Exportações dos componentes UI
- */
-
-export * from './Card';
-export * from './Badge';
-export * from './Button';
-export * from './Table';
+export * from './button';
+export * from './card';
+export * from './badge';
+export * from './table';
