@@ -84,6 +84,7 @@ export async function processSpreadsheetRows(
   await Promise.all(Array.from({ length: workerCount }, runNext));
 
   const finishedAtMs = Date.now();
+  const orderedLogs = [...logs].sort((a, b) => a.line - b.line);
   const summary: SpreadsheetValidationSummary = {
     requestId: options.requestId,
     startedAt,
@@ -96,7 +97,7 @@ export async function processSpreadsheetRows(
     failed,
   };
 
-  return { summary, logs };
+  return { summary, logs: orderedLogs };
 }
 
 async function processSpreadsheetRow(

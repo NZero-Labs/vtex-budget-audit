@@ -1,41 +1,44 @@
-'use client';
+"use client";
 
 /**
  * Página de comparação Budget vs Budget
  * Design System: Amara NZero
  */
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { useState } from "react";
+import Link from "next/link";
 import {
   BudgetInputForm,
   BudgetComparisonSummaryCards,
   BudgetDiffTable,
   WeightSummary,
   PriceBreakdown,
-} from '../components/budgets';
-import { PromoDiffs } from '../components/cart/PromoDiffs';
-import { ShippingDiffs } from '../components/cart/ShippingDiffs';
-import { DiffLegend } from '../components/cart/DiffLegend';
-import { BudgetComparisonResult, ApiError } from '@/lib/compare/types';
-import { Button } from '../components/shared/audit-button';
+} from "../components/budgets";
+import { PromoDiffs } from "../components/cart/PromoDiffs";
+import { ShippingDiffs } from "../components/cart/ShippingDiffs";
+import { DiffLegend } from "../components/cart/DiffLegend";
+import { BudgetComparisonResult, ApiError } from "@/lib/compare/types";
+import { Button } from "../components/shared/audit-button";
 
-type ViewState = 'input' | 'loading' | 'result' | 'error';
+type ViewState = "input" | "loading" | "result" | "error";
 
 export default function CompareBudgetsPage() {
-  const [viewState, setViewState] = useState<ViewState>('input');
+  const [viewState, setViewState] = useState<ViewState>("input");
   const [result, setResult] = useState<BudgetComparisonResult | null>(null);
   const [error, setError] = useState<ApiError | null>(null);
 
-  const handleSubmit = async (data: { idBudget1: string; idBudget2: string }) => {
-    setViewState('loading');
+  const handleSubmit = async (data: {
+    idBudget1: string;
+    idBudget2: string;
+  }) => {
+    setViewState("loading");
     setError(null);
 
     try {
-      const response = await fetch('/api/compare-budgets', {
-        method: 'POST',
+      const response = await fetch("/api/compare-budgets", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
@@ -44,24 +47,24 @@ export default function CompareBudgetsPage() {
 
       if (!response.ok) {
         setError(json as ApiError);
-        setViewState('error');
+        setViewState("error");
         return;
       }
 
       setResult(json as BudgetComparisonResult);
-      setViewState('result');
+      setViewState("result");
     } catch (err) {
       setError({
-        error: 'NETWORK_ERROR',
-        message: 'Erro de conexão. Verifique sua internet e tente novamente.',
-        details: err instanceof Error ? err.message : 'Erro desconhecido',
+        error: "NETWORK_ERROR",
+        message: "Erro de conexão. Verifique sua internet e tente novamente.",
+        details: err instanceof Error ? err.message : "Erro desconhecido",
       });
-      setViewState('error');
+      setViewState("error");
     }
   };
 
   const handleReset = () => {
-    setViewState('input');
+    setViewState("input");
     setResult(null);
     setError(null);
   };
@@ -72,49 +75,71 @@ export default function CompareBudgetsPage() {
     const lines: string[] = [];
 
     // Header
-    lines.push('VTEX Budget Audit - Comparação de Orçamentos');
-    lines.push(`Data: ${new Date(result.metadata.comparedAt).toLocaleString('pt-BR')}`);
+    lines.push("VTEX Budget Audit - Comparação de Orçamentos");
+    lines.push(
+      `Data: ${new Date(result.metadata.comparedAt).toLocaleString("pt-BR")}`,
+    );
     lines.push(`Orçamento 1: ${result.metadata.budget1Id}`);
     lines.push(`Orçamento 2: ${result.metadata.budget2Id}`);
-    lines.push('');
+    lines.push("");
 
     // Resumo
-    lines.push('=== RESUMO ===');
+    lines.push("=== RESUMO ===");
     lines.push(`Total de divergências: ${result.summary.totalDiffs}`);
     lines.push(`Divergências críticas: ${result.summary.criticalDiffs}`);
-    lines.push(`Diferença financeira: R$ ${result.summary.financialDifference.toFixed(2)}`);
-    lines.push(`Orçamento mais barato: ${result.priceAnalysis.cheaperBudget === 'equal' ? 'Iguais' : result.priceAnalysis.cheaperBudget === 'budget1' ? 'Orçamento 1' : 'Orçamento 2'}`);
-    lines.push('');
+    lines.push(
+      `Diferença financeira: R$ ${result.summary.financialDifference.toFixed(2)}`,
+    );
+    lines.push(
+      `Orçamento mais barato: ${result.priceAnalysis.cheaperBudget === "equal" ? "Iguais" : result.priceAnalysis.cheaperBudget === "budget1" ? "Orçamento 1" : "Orçamento 2"}`,
+    );
+    lines.push("");
 
     // Peso
-    lines.push('=== PESO ===');
-    lines.push(`Peso Orçamento 1: ${result.weightInfo.budget1.totalWeight.toFixed(2)} kg`);
-    lines.push(`Peso Orçamento 2: ${result.weightInfo.budget2.totalWeight.toFixed(2)} kg`);
-    lines.push(`Diferença de peso: ${result.weightInfo.difference.toFixed(2)} kg`);
-    lines.push('');
+    lines.push("=== PESO ===");
+    lines.push(
+      `Peso Orçamento 1: ${result.weightInfo.budget1.totalWeight.toFixed(2)} kg`,
+    );
+    lines.push(
+      `Peso Orçamento 2: ${result.weightInfo.budget2.totalWeight.toFixed(2)} kg`,
+    );
+    lines.push(
+      `Diferença de peso: ${result.weightInfo.difference.toFixed(2)} kg`,
+    );
+    lines.push("");
 
     // Totais
-    lines.push('=== TOTAIS ===');
-    lines.push('Campo,Orçamento 1,Orçamento 2,Diferença');
-    lines.push(`Subtotal,${result.totalsDiff.subtotal.budget1.toFixed(2)},${result.totalsDiff.subtotal.budget2.toFixed(2)},${result.totalsDiff.subtotal.diff.toFixed(2)}`);
-    lines.push(`Descontos,${result.totalsDiff.discounts.budget1.toFixed(2)},${result.totalsDiff.discounts.budget2.toFixed(2)},${result.totalsDiff.discounts.diff.toFixed(2)}`);
-    lines.push(`Frete,${result.totalsDiff.shipping.budget1.toFixed(2)},${result.totalsDiff.shipping.budget2.toFixed(2)},${result.totalsDiff.shipping.diff.toFixed(2)}`);
-    lines.push(`Total,${result.totalsDiff.total.budget1.toFixed(2)},${result.totalsDiff.total.budget2.toFixed(2)},${result.totalsDiff.total.diff.toFixed(2)}`);
-    lines.push('');
+    lines.push("=== TOTAIS ===");
+    lines.push("Campo,Orçamento 1,Orçamento 2,Diferença");
+    lines.push(
+      `Subtotal,${result.totalsDiff.subtotal.budget1.toFixed(2)},${result.totalsDiff.subtotal.budget2.toFixed(2)},${result.totalsDiff.subtotal.diff.toFixed(2)}`,
+    );
+    lines.push(
+      `Descontos,${result.totalsDiff.discounts.budget1.toFixed(2)},${result.totalsDiff.discounts.budget2.toFixed(2)},${result.totalsDiff.discounts.diff.toFixed(2)}`,
+    );
+    lines.push(
+      `Frete,${result.totalsDiff.shipping.budget1.toFixed(2)},${result.totalsDiff.shipping.budget2.toFixed(2)},${result.totalsDiff.shipping.diff.toFixed(2)}`,
+    );
+    lines.push(
+      `Total,${result.totalsDiff.total.budget1.toFixed(2)},${result.totalsDiff.total.budget2.toFixed(2)},${result.totalsDiff.total.diff.toFixed(2)}`,
+    );
+    lines.push("");
 
     // Itens
-    lines.push('=== ITENS ===');
-    lines.push('SKU,Nome,Qtd Orç1,Qtd Orç2,Preço Orç1,Preço Orç2,Peso Unit (kg),Status,Impacto');
+    lines.push("=== ITENS ===");
+    lines.push(
+      "SKU,Nome,Qtd Orç1,Qtd Orç2,Preço Orç1,Preço Orç2,Peso Unit (kg),Status,Impacto",
+    );
     for (const item of result.itemDiffs) {
       lines.push(
-        `${item.skuId},"${item.name}",${item.budget1Qty ?? ''},${item.budget2Qty ?? ''},${item.budget1Price?.toFixed(2) ?? ''},${item.budget2Price?.toFixed(2) ?? ''},${item.unitWeight.toFixed(2)},${item.status},${item.impact}`
+        `${item.skuId},"${item.name}",${item.budget1Qty ?? ""},${item.budget2Qty ?? ""},${item.budget1Price?.toFixed(2) ?? ""},${item.budget2Price?.toFixed(2) ?? ""},${item.unitWeight.toFixed(2)},${item.status},${item.impact}`,
       );
     }
 
-    const csvContent = lines.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const csvContent = lines.join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = `comparacao_budgets_${result.metadata.budget1Id}_${result.metadata.budget2Id}_${Date.now()}.csv`;
     link.click();
@@ -127,12 +152,22 @@ export default function CompareBudgetsPage() {
       <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="mb-2 flex min-w-0 items-start gap-3">
-            <Link 
-              href="/tools/budget-audit" 
+            <Link
+              href="/tools/budget-audit"
               className="mt-1 shrink-0 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
+                />
               </svg>
             </Link>
             <h2 className="min-w-0 text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
@@ -140,16 +175,25 @@ export default function CompareBudgetsPage() {
             </h2>
           </div>
           <p className="max-w-3xl text-sm text-gray-600 dark:text-gray-300 sm:text-base">
-            Compare dois orçamentos para identificar diferenças de preços, quantidades e peso
+            Compare dois orçamentos para identificar diferenças de preços,
+            quantidades e peso
           </p>
         </div>
 
-        {viewState === 'result' && (
+        {viewState === "result" && (
           <div className="grid w-full gap-2 sm:flex sm:w-auto sm:shrink-0">
-            <Button className="w-full sm:w-auto" variant="outline" onClick={handleExportCSV}>
+            <Button
+              className="w-full sm:w-auto"
+              variant="outline"
+              onClick={handleExportCSV}
+            >
               Exportar CSV
             </Button>
-            <Button className="w-full sm:w-auto" variant="secondary" onClick={handleReset}>
+            <Button
+              className="w-full sm:w-auto"
+              variant="secondary"
+              onClick={handleReset}
+            >
               Nova Comparação
             </Button>
           </div>
@@ -157,15 +201,15 @@ export default function CompareBudgetsPage() {
       </div>
 
       {/* Formulário de entrada */}
-      {(viewState === 'input' || viewState === 'loading') && (
+      {(viewState === "input" || viewState === "loading") && (
         <BudgetInputForm
           onSubmit={handleSubmit}
-          isLoading={viewState === 'loading'}
+          isLoading={viewState === "loading"}
         />
       )}
 
       {/* Estado de erro */}
-      {viewState === 'error' && error && (
+      {viewState === "error" && error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
           <h3 className="text-lg font-bold text-red-700 dark:text-red-400 mb-2">
             Erro na Comparação
@@ -175,7 +219,7 @@ export default function CompareBudgetsPage() {
           </p>
           {error.details !== undefined && (
             <pre className="bg-red-100 dark:bg-red-900/40 p-3 rounded-md text-sm text-red-700 dark:text-red-300 overflow-x-auto">
-              {typeof error.details === 'string'
+              {typeof error.details === "string"
                 ? error.details
                 : JSON.stringify(error.details as object, null, 2)}
             </pre>
@@ -192,7 +236,7 @@ export default function CompareBudgetsPage() {
       )}
 
       {/* Resultado da comparação */}
-      {viewState === 'result' && result && (
+      {viewState === "result" && result && (
         <div className="min-w-0 space-y-6 sm:space-y-8">
           {/* Cards de resumo */}
           <BudgetComparisonSummaryCards
@@ -212,16 +256,16 @@ export default function CompareBudgetsPage() {
 
           {/* Promoções */}
           {result.promoDiffs.length > 0 && (
-            <PromoDiffs 
-              promoDiffs={result.promoDiffs} 
-              labels={{ left: 'Orçamento 1', right: 'Orçamento 2' }}
+            <PromoDiffs
+              promoDiffs={result.promoDiffs}
+              labels={{ left: "Orçamento 1", right: "Orçamento 2" }}
             />
           )}
 
           {/* Entrega */}
-          <ShippingDiffs 
-            shippingDiff={result.shippingDiff} 
-            labels={{ left: 'Orçamento 1', right: 'Orçamento 2' }}
+          <ShippingDiffs
+            shippingDiff={result.shippingDiff}
+            labels={{ left: "Orçamento 1", right: "Orçamento 2" }}
           />
 
           {/* Legenda */}
@@ -229,8 +273,9 @@ export default function CompareBudgetsPage() {
 
           {/* Metadados */}
           <div className="text-xs text-gray-500 dark:text-gray-400 text-center">
-            Comparação realizada em {new Date(result.metadata.comparedAt).toLocaleString('pt-BR')}
-            {' | '}Request ID: {result.metadata.requestId}
+            Comparação realizada em{" "}
+            {new Date(result.metadata.comparedAt).toLocaleString("pt-BR")}
+            {" | "}Request ID: {result.metadata.requestId}
           </div>
         </div>
       )}

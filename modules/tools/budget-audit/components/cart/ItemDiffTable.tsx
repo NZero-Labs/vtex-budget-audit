@@ -1,35 +1,45 @@
-'use client';
+"use client";
 
 /**
  * Tabela de comparação de itens - Design System Amara NZero
  */
 
-import { useState } from 'react';
-import { Card } from '../shared/audit-card';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../shared/audit-table';
-import { StatusBadge, ImpactBadge } from '../shared/audit-badge';
-import { ItemDiff, ImpactLevel } from '@/lib/compare/types';
-import { formatBRL, formatPercent } from '@/lib/utils/formatters';
+import { useState } from "react";
+import { Card } from "../shared/audit-card";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "../shared/audit-table";
+import { StatusBadge, ImpactBadge } from "../shared/audit-badge";
+import { ItemDiff, ImpactLevel } from "@/lib/compare/types";
+import { formatBRL, formatPercent } from "@/lib/utils/formatters";
 
 interface ItemDiffTableProps {
   itemDiffs: ItemDiff[];
 }
 
-type FilterType = 'all' | 'divergent' | 'critical';
+type FilterType = "all" | "divergent" | "critical";
 
 export function ItemDiffTable({ itemDiffs }: ItemDiffTableProps) {
-  const [filter, setFilter] = useState<FilterType>('all');
+  const [filter, setFilter] = useState<FilterType>("all");
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   const filteredItems = itemDiffs.filter((item) => {
-    if (filter === 'all') return true;
-    if (filter === 'divergent') return item.status !== 'match';
-    if (filter === 'critical') return item.impact === 'critical' || item.impact === 'high';
+    if (filter === "all") return true;
+    if (filter === "divergent") return item.status !== "match";
+    if (filter === "critical")
+      return item.impact === "critical" || item.impact === "high";
     return true;
   });
 
-  const divergentCount = itemDiffs.filter((i) => i.status !== 'match').length;
-  const criticalCount = itemDiffs.filter((i) => i.impact === 'critical' || i.impact === 'high').length;
+  const divergentCount = itemDiffs.filter((i) => i.status !== "match").length;
+  const criticalCount = itemDiffs.filter(
+    (i) => i.impact === "critical" || i.impact === "high",
+  ).length;
 
   return (
     <Card>
@@ -37,26 +47,26 @@ export function ItemDiffTable({ itemDiffs }: ItemDiffTableProps) {
         <h3 className="text-lg font-bold text-brand-black dark:text-white">
           Comparação de Itens
         </h3>
-        
+
         {/* Filtros */}
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
-          <FilterButton 
-            active={filter === 'all'} 
-            onClick={() => setFilter('all')}
+          <FilterButton
+            active={filter === "all"}
+            onClick={() => setFilter("all")}
             count={itemDiffs.length}
           >
             Todos
           </FilterButton>
-          <FilterButton 
-            active={filter === 'divergent'} 
-            onClick={() => setFilter('divergent')}
+          <FilterButton
+            active={filter === "divergent"}
+            onClick={() => setFilter("divergent")}
             count={divergentCount}
           >
             Divergentes
           </FilterButton>
-          <FilterButton 
-            active={filter === 'critical'} 
-            onClick={() => setFilter('critical')}
+          <FilterButton
+            active={filter === "critical"}
+            onClick={() => setFilter("critical")}
             count={criticalCount}
           >
             Críticos
@@ -66,9 +76,9 @@ export function ItemDiffTable({ itemDiffs }: ItemDiffTableProps) {
 
       {filteredItems.length === 0 ? (
         <div className="text-center py-8 text-grey-medium">
-          {filter === 'all' 
-            ? 'Nenhum item para comparar' 
-            : 'Nenhum item corresponde ao filtro selecionado'}
+          {filter === "all"
+            ? "Nenhum item para comparar"
+            : "Nenhum item corresponde ao filtro selecionado"}
         </div>
       ) : (
         <Table>
@@ -87,34 +97,50 @@ export function ItemDiffTable({ itemDiffs }: ItemDiffTableProps) {
           <TableBody>
             {filteredItems.map((item) => (
               <>
-                <TableRow 
+                <TableRow
                   key={item.skuId}
                   className={getRowClassName(item.impact)}
-                  onClick={() => setExpandedRow(expandedRow === item.skuId ? null : item.skuId)}
+                  onClick={() =>
+                    setExpandedRow(
+                      expandedRow === item.skuId ? null : item.skuId,
+                    )
+                  }
                 >
-                  <TableCell className="font-mono text-xs">{item.skuId}</TableCell>
-                  <TableCell className="max-w-[220px] truncate sm:max-w-[320px]">{item.name}</TableCell>
-                  <TableCell align="center">
-                    {item.budgetQty ?? '-'}
+                  <TableCell className="font-mono text-xs">
+                    {item.skuId}
                   </TableCell>
+                  <TableCell className="max-w-[220px] truncate sm:max-w-[320px]">
+                    {item.name}
+                  </TableCell>
+                  <TableCell align="center">{item.budgetQty ?? "-"}</TableCell>
                   <TableCell align="center">
-                    {item.cartQty ?? '-'}
+                    {item.cartQty ?? "-"}
                     {item.qtyDiffAbs !== undefined && item.qtyDiffAbs !== 0 && (
-                      <span className={`ml-1 text-xs ${item.qtyDiffAbs > 0 ? 'text-status-error' : 'text-green-main'}`}>
-                        ({item.qtyDiffAbs > 0 ? '+' : ''}{item.qtyDiffAbs})
+                      <span
+                        className={`ml-1 text-xs ${item.qtyDiffAbs > 0 ? "text-status-error" : "text-green-main"}`}
+                      >
+                        ({item.qtyDiffAbs > 0 ? "+" : ""}
+                        {item.qtyDiffAbs})
                       </span>
                     )}
                   </TableCell>
                   <TableCell align="right">
-                    {item.budgetPrice !== undefined ? formatBRL(item.budgetPrice) : '-'}
+                    {item.budgetPrice !== undefined
+                      ? formatBRL(item.budgetPrice)
+                      : "-"}
                   </TableCell>
                   <TableCell align="right">
-                    {item.cartPrice !== undefined ? formatBRL(item.cartPrice) : '-'}
-                    {item.priceDiffPct !== undefined && Math.abs(item.priceDiffPct) > 0.01 && (
-                      <span className={`ml-1 text-xs ${item.priceDiffPct > 0 ? 'text-status-error' : 'text-green-main'}`}>
-                        ({formatPercent(item.priceDiffPct)})
-                      </span>
-                    )}
+                    {item.cartPrice !== undefined
+                      ? formatBRL(item.cartPrice)
+                      : "-"}
+                    {item.priceDiffPct !== undefined &&
+                      Math.abs(item.priceDiffPct) > 0.01 && (
+                        <span
+                          className={`ml-1 text-xs ${item.priceDiffPct > 0 ? "text-status-error" : "text-green-main"}`}
+                        >
+                          ({formatPercent(item.priceDiffPct)})
+                        </span>
+                      )}
                   </TableCell>
                   <TableCell align="center">
                     <StatusBadge status={item.status} />
@@ -129,7 +155,10 @@ export function ItemDiffTable({ itemDiffs }: ItemDiffTableProps) {
                     <TableCell colSpan={8} className="bg-card-bg">
                       <div className="py-2 px-4">
                         <p className="text-sm text-grey-dark">
-                          <strong className="text-brand-black">Detalhes:</strong> {item.explanation}
+                          <strong className="text-brand-black">
+                            Detalhes:
+                          </strong>{" "}
+                          {item.explanation}
                         </p>
                       </div>
                     </TableCell>
@@ -146,16 +175,16 @@ export function ItemDiffTable({ itemDiffs }: ItemDiffTableProps) {
 
 function getRowClassName(impact: ImpactLevel): string {
   switch (impact) {
-    case 'critical':
-      return 'bg-status-error/5';
-    case 'high':
-      return 'bg-brand-yellow/10';
-    case 'medium':
-      return 'bg-brand-yellow/5';
-    case 'low':
-      return 'bg-brand-cyan/5';
+    case "critical":
+      return "bg-status-error/5";
+    case "high":
+      return "bg-brand-yellow/10";
+    case "medium":
+      return "bg-brand-yellow/5";
+    case "low":
+      return "bg-brand-cyan/5";
     default:
-      return '';
+      return "";
   }
 }
 
@@ -172,9 +201,11 @@ function FilterButton({ children, active, onClick, count }: FilterButtonProps) {
       onClick={onClick}
       className={`
         shrink-0 px-3 py-1.5 rounded-md text-sm font-medium transition-colors
-        ${active 
-          ? 'bg-green-main text-white' 
-          : 'bg-card-bg text-grey-dark hover:bg-grey-medium/20'}
+        ${
+          active
+            ? "bg-green-main text-white"
+            : "bg-card-bg text-grey-dark hover:bg-grey-medium/20"
+        }
       `}
     >
       {children} ({count})

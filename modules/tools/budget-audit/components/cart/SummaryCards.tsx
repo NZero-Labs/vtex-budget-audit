@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
 /**
  * Cards de resumo da comparação - Design System Amara NZero
  */
 
-import { Card } from '../shared/audit-card';
-import { ImpactBadge } from '../shared/audit-badge';
-import { ComparisonSummary, TotalsDiff } from '@/lib/compare/types';
-import { formatBRL, formatPercent } from '@/lib/utils/formatters';
+import { Card } from "../shared/audit-card";
+import { ImpactBadge } from "../shared/audit-badge";
+import { ComparisonSummary, TotalsDiff } from "@/lib/compare/types";
+import { formatBRL, formatPercent } from "@/lib/utils/formatters";
 
 interface SummaryCardsProps {
   summary: ComparisonSummary;
@@ -25,16 +25,22 @@ export function SummaryCards({ summary, totalsDiff }: SummaryCardsProps) {
               Resultado da Comparação
             </h3>
             <p className="text-base text-brand-black/70 dark:text-white/70 mt-2">
-              {summary.totalDiffs === 0 
-                ? 'Nenhuma divergência encontrada'
+              {summary.totalDiffs === 0
+                ? "Nenhuma divergência encontrada"
                 : `${summary.totalDiffs} divergência(s) encontrada(s)`}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-            <ImpactBadge impact={summary.overallImpact} className="text-sm px-4 py-1.5" />
+            <ImpactBadge
+              impact={summary.overallImpact}
+              className="text-sm px-4 py-1.5"
+            />
             {summary.financialImpact !== 0 && (
-              <div className={`text-xl font-bold ${summary.financialImpact > 0 ? 'text-status-error' : 'text-green-main'}`}>
-                {summary.financialImpact > 0 ? '+' : ''}{formatBRL(summary.financialImpact)}
+              <div
+                className={`text-xl font-bold ${summary.financialImpact > 0 ? "text-status-error" : "text-green-main"}`}
+              >
+                {summary.financialImpact > 0 ? "+" : ""}
+                {formatBRL(summary.financialImpact)}
               </div>
             )}
           </div>
@@ -77,7 +83,11 @@ export function SummaryCards({ summary, totalsDiff }: SummaryCardsProps) {
         <Card title="Orçamento" className="border-l-4 border-brand-cyan">
           <div className="space-y-3">
             <TotalRow label="Subtotal" value={totalsDiff.subtotal.budget} />
-            <TotalRow label="Descontos" value={-totalsDiff.discounts.budget} isNegative />
+            <TotalRow
+              label="Descontos"
+              value={-totalsDiff.discounts.budget}
+              isNegative
+            />
             <TotalRow label="Frete" value={totalsDiff.shipping.budget} />
             <TotalRow label="Impostos" value={totalsDiff.taxes.budget} />
             <div className="pt-3 border-t border-grey-medium/20">
@@ -89,38 +99,38 @@ export function SummaryCards({ summary, totalsDiff }: SummaryCardsProps) {
         {/* Carrinho */}
         <Card title="Carrinho" className="border-l-4 border-green-main">
           <div className="space-y-3">
-            <TotalRow 
-              label="Subtotal" 
-              value={totalsDiff.subtotal.cart} 
+            <TotalRow
+              label="Subtotal"
+              value={totalsDiff.subtotal.cart}
               diff={totalsDiff.subtotal.diff}
               diffPct={totalsDiff.subtotal.diffPct}
             />
-            <TotalRow 
-              label="Descontos" 
-              value={-totalsDiff.discounts.cart} 
+            <TotalRow
+              label="Descontos"
+              value={-totalsDiff.discounts.cart}
               diff={-totalsDiff.discounts.diff}
               diffPct={totalsDiff.discounts.diffPct}
-              isNegative 
+              isNegative
             />
-            <TotalRow 
-              label="Frete" 
-              value={totalsDiff.shipping.cart} 
+            <TotalRow
+              label="Frete"
+              value={totalsDiff.shipping.cart}
               diff={totalsDiff.shipping.diff}
               diffPct={totalsDiff.shipping.diffPct}
             />
-            <TotalRow 
-              label="Impostos" 
-              value={totalsDiff.taxes.cart} 
+            <TotalRow
+              label="Impostos"
+              value={totalsDiff.taxes.cart}
               diff={totalsDiff.taxes.diff}
               diffPct={totalsDiff.taxes.diffPct}
             />
             <div className="pt-3 border-t border-grey-medium/20">
-              <TotalRow 
-                label="Total" 
-                value={totalsDiff.total.cart} 
+              <TotalRow
+                label="Total"
+                value={totalsDiff.total.cart}
                 diff={totalsDiff.total.diff}
                 diffPct={totalsDiff.total.diffPct}
-                isTotal 
+                isTotal
               />
             </div>
           </div>
@@ -131,7 +141,10 @@ export function SummaryCards({ summary, totalsDiff }: SummaryCardsProps) {
       {totalsDiff.explanation && (
         <div className="p-4 bg-brand-yellow/10 border border-brand-yellow/30 rounded-lg">
           <p className="text-sm text-brand-black/80 dark:text-white/80 leading-relaxed">
-            <strong className="text-brand-black dark:text-white">Análise:</strong> {totalsDiff.explanation}
+            <strong className="text-brand-black dark:text-white">
+              Análise:
+            </strong>{" "}
+            {totalsDiff.explanation}
           </p>
         </div>
       )}
@@ -148,18 +161,31 @@ interface TotalRowProps {
   isNegative?: boolean;
 }
 
-function TotalRow({ label, value, diff, diffPct, isTotal, isNegative }: TotalRowProps) {
+function TotalRow({
+  label,
+  value,
+  diff,
+  diffPct,
+  isTotal,
+  isNegative,
+}: TotalRowProps) {
   const hasDiff = diff !== undefined && Math.abs(diff) > 0.01;
-  
+
   return (
-    <div className={`flex min-w-0 items-center justify-between gap-3 py-1 ${isTotal ? 'text-base font-bold sm:text-lg' : 'text-sm sm:text-base'}`}>
+    <div
+      className={`flex min-w-0 items-center justify-between gap-3 py-1 ${isTotal ? "text-base font-bold sm:text-lg" : "text-sm sm:text-base"}`}
+    >
       <span className="text-brand-black/70 dark:text-white/70">{label}</span>
       <div className="min-w-0 text-right">
-        <span className={`font-medium ${isNegative && value !== 0 ? 'text-green-main' : 'text-brand-black dark:text-white'}`}>
+        <span
+          className={`font-medium ${isNegative && value !== 0 ? "text-green-main" : "text-brand-black dark:text-white"}`}
+        >
           {formatBRL(value)}
         </span>
         {hasDiff && (
-          <span className={`ml-2 text-sm font-medium ${diff! > 0 ? 'text-status-error' : 'text-green-main'}`}>
+          <span
+            className={`ml-2 text-sm font-medium ${diff! > 0 ? "text-status-error" : "text-green-main"}`}
+          >
             ({formatPercent(diffPct!)})
           </span>
         )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -13,7 +13,13 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -24,21 +30,37 @@ import type {
   SpreadsheetValidationSummary,
 } from "@/lib/spreadsheet-validation";
 
+type ProgressState = {
+  processed: number;
+  total: number;
+  updated: number;
+  skipped: number;
+  failed: number;
+};
+
+const INITIAL_PROGRESS: ProgressState = {
+  processed: 0,
+  total: 0,
+  updated: 0,
+  skipped: 0,
+  failed: 0,
+};
+
 export function SpreadsheetValidationPage() {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<SpreadsheetValidationStatus>("idle");
   const [logs, setLogs] = useState<SpreadsheetValidationLog[]>([]);
-  const [summary, setSummary] = useState<SpreadsheetValidationSummary | null>(null);
+  const [summary, setSummary] = useState<SpreadsheetValidationSummary | null>(
+    null,
+  );
   const [error, setError] = useState("");
-  const [progress, setProgress] = useState({ processed: 0, total: 0, updated: 0, skipped: 0, failed: 0 });
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const progressPercent = useMemo(() => {
-    if (progress.total === 0) return 0;
-    return Math.round((progress.processed / progress.total) * 100);
-  }, [progress.processed, progress.total]);
+  const [progress, setProgress] = useState<ProgressState>(INITIAL_PROGRESS);
 
   const running = status === "validating" || status === "processing";
+  const progressPercent =
+    progress.total === 0
+      ? 0
+      : Math.round((progress.processed / progress.total) * 100);
   const visibleLogs = logs.slice(-160);
 
   async function runValidation() {
@@ -48,7 +70,7 @@ export function SpreadsheetValidationPage() {
     setError("");
     setLogs([]);
     setSummary(null);
-    setProgress({ processed: 0, total: 0, updated: 0, skipped: 0, failed: 0 });
+    setProgress(INITIAL_PROGRESS);
 
     const formData = new FormData();
     formData.append("file", file);
@@ -70,7 +92,11 @@ export function SpreadsheetValidationPage() {
       await readEvents(response.body);
     } catch (cause) {
       setStatus("error");
-      setError(cause instanceof Error ? cause.message : "Falha de rede ao enviar a planilha.");
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Falha de rede ao enviar a planilha.",
+      );
     }
   }
 
@@ -86,42 +112,46 @@ export function SpreadsheetValidationPage() {
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
         buffer = lines.pop() ?? "";
-        for (const line of lines) consumeEvent(JSON.parse(line) as SpreadsheetValidationEvent);
+        for (const line of lines)
+          consumeEvent(JSON.parse(line) as SpreadsheetValidationEvent);
       }
-      if (buffer.trim()) consumeEvent(JSON.parse(buffer) as SpreadsheetValidationEvent);
+      if (buffer.trim())
+        consumeEvent(JSON.parse(buffer) as SpreadsheetValidationEvent);
     } catch (cause) {
       setStatus("error");
-      setError(cause instanceof Error ? cause.message : "Erro ao ler o progresso.");
+      setError(
+        cause instanceof Error ? cause.message : "Erro ao ler o progresso.",
+      );
     }
   }
 
   function consumeEvent(event: SpreadsheetValidationEvent) {
-    if (event.type === "start") {
-      setProgress((current) => ({ ...current, total: event.totalRows }));
-      return;
-    }
+    switch (event.type) {
+      case "start":
+        setProgress((current) => ({ ...current, total: event.totalRows }));
+        return;
 
-    if (event.type === "progress") {
-      setProgress({
-        processed: event.processed,
-        total: event.total,
-        updated: event.updated,
-        skipped: event.skipped,
-        failed: event.failed,
-      });
-      setLogs((current) => [...current, event.log]);
-      return;
-    }
+      case "progress":
+        setProgress({
+          processed: event.processed,
+          total: event.total,
+          updated: event.updated,
+          skipped: event.skipped,
+          failed: event.failed,
+        });
+        setLogs((current) => [...current, event.log]);
+        return;
 
-    if (event.type === "complete") {
-      setSummary(event.summary);
-      setLogs(event.logs);
-      setStatus("completed");
-      return;
-    }
+      case "complete":
+        setSummary(event.summary);
+        setLogs(event.logs);
+        setStatus("completed");
+        return;
 
-    setStatus("error");
-    setError(event.message);
+      case "error":
+        setStatus("error");
+        setError(event.message);
+    }
   }
 
   function downloadJson() {
@@ -147,7 +177,12 @@ export function SpreadsheetValidationPage() {
         .map(csvValue)
         .join(","),
     );
-    downloadFile("spreadsheet-validation-results.csv", [header, ...rows].join("\n"), "text/csv");
+
+    downloadFile(
+      "spreadsheet-validation-results.csv",
+      [header, ...rows].join("\n"),
+      "text/csv",
+    );
   }
 
   return (
@@ -163,20 +198,27 @@ export function SpreadsheetValidationPage() {
               Validação de Planilhas
             </h1>
             <p className="max-w-3xl text-sm text-muted-foreground sm:text-base">
-              Envie um CSV com `email` e `cnpjDoc` para validar integradores no Master Data e redefinir `has_used_coupon` quando necessário.
+              Envie um CSV com `email` e `cnpjDoc` para validar integradores no
+              Master Data e redefinir `has_used_coupon` quando necessário.
             </p>
           </div>
         </div>
         <Card className="bg-primary/5">
           <CardHeader>
             <CardTitle className="text-base">Resumo da execução</CardTitle>
-            <CardDescription>Status atual da última planilha enviada.</CardDescription>
+            <CardDescription>
+              Status atual da última planilha enviada.
+            </CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3 text-sm">
             <Metric label="Processadas" value={progress.processed} />
             <Metric label="Atualizadas" value={progress.updated} />
             <Metric label="Ignoradas" value={progress.skipped} />
-            <Metric label="Falhas" value={progress.failed} tone={progress.failed > 0 ? "danger" : "default"} />
+            <Metric
+              label="Falhas"
+              value={progress.failed}
+              tone={progress.failed > 0 ? "danger" : "default"}
+            />
           </CardContent>
         </Card>
       </section>
@@ -193,7 +235,10 @@ export function SpreadsheetValidationPage() {
         <Card>
           <CardHeader>
             <CardTitle>Arquivo</CardTitle>
-            <CardDescription>Use o mesmo formato do `ativa.csv`: delimitador `;` e cabeçalhos `email;cnpjDoc`.</CardDescription>
+            <CardDescription>
+              Use o mesmo formato do `ativa.csv`: delimitador `;` e cabeçalhos
+              `email;cnpjDoc`.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div
@@ -202,19 +247,23 @@ export function SpreadsheetValidationPage() {
                 file && "border-primary/50 bg-primary/5",
               )}
             >
-              <Label htmlFor="spreadsheet-file" className="flex cursor-pointer flex-col items-center gap-3 text-center">
+              <Label
+                htmlFor="spreadsheet-file"
+                className="flex cursor-pointer flex-col items-center gap-3 text-center"
+              >
                 <span className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
                   <UploadCloud />
                 </span>
                 <span className="space-y-1">
-                  <span className="block font-medium">{file ? file.name : "Selecionar planilha CSV"}</span>
+                  <span className="block font-medium">
+                    {file ? file.name : "Selecionar planilha CSV"}
+                  </span>
                   <span className="block text-xs text-muted-foreground">
                     A validação de colunas acontece antes da execução.
                   </span>
                 </span>
               </Label>
               <Input
-                ref={inputRef}
                 id="spreadsheet-file"
                 type="file"
                 accept=".csv,text/csv"
@@ -224,8 +273,17 @@ export function SpreadsheetValidationPage() {
               />
             </div>
 
-            <Button className="w-full" size="lg" disabled={!file || running} onClick={runValidation}>
-              {running ? <TerminalSquare className="animate-pulse" /> : <Play />}
+            <Button
+              className="w-full"
+              size="lg"
+              disabled={!file || running}
+              onClick={runValidation}
+            >
+              {running ? (
+                <TerminalSquare className="animate-pulse" />
+              ) : (
+                <Play />
+              )}
               {running ? "Processando..." : "Executar validação"}
             </Button>
 
@@ -262,11 +320,15 @@ export function SpreadsheetValidationPage() {
             <div>
               <CardTitle>Logs</CardTitle>
               <CardDescription>
-                Últimos eventos da execução. O arquivo de download contém todos os registros.
+                Últimos eventos da execução. O arquivo de download contém todos
+                os registros.
               </CardDescription>
             </div>
             {summary && (
-              <Badge variant={summary.failed > 0 ? "destructive" : "default"} className="gap-1">
+              <Badge
+                variant={summary.failed > 0 ? "destructive" : "default"}
+                className="gap-1"
+              >
                 <CheckCircle2 className="size-3" />
                 Concluído
               </Badge>
@@ -279,10 +341,16 @@ export function SpreadsheetValidationPage() {
               ) : (
                 <div className="space-y-2">
                   {visibleLogs.map((log) => (
-                    <div key={`${log.line}-${log.cnpj}-${log.status}`} className="grid gap-1 rounded-lg bg-muted/30 p-2 sm:grid-cols-[80px_minmax(0,1fr)]">
-                      <span className={statusColor(log.status)}>linha {log.line}</span>
+                    <div
+                      key={`${log.line}-${log.cnpj}-${log.status}`}
+                      className="grid gap-1 rounded-lg bg-muted/30 p-2 sm:grid-cols-[80px_minmax(0,1fr)]"
+                    >
+                      <span className={statusColor(log.status)}>
+                        linha {log.line}
+                      </span>
                       <span className="min-w-0 break-words">
-                        {log.status.toUpperCase()} {log.cnpj || log.cnpjOriginal} - {log.reason}
+                        {log.status.toUpperCase()}{" "}
+                        {log.cnpj || log.cnpjOriginal} - {log.reason}
                       </span>
                     </div>
                   ))}
@@ -296,11 +364,26 @@ export function SpreadsheetValidationPage() {
   );
 }
 
-function Metric({ label, value, tone = "default" }: { label: string; value: number; tone?: "default" | "danger" }) {
+function Metric({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value: number;
+  tone?: "default" | "danger";
+}) {
   return (
     <div className="rounded-lg border bg-background/70 p-3">
       <div className="text-xs text-muted-foreground">{label}</div>
-      <div className={cn("text-2xl font-semibold", tone === "danger" && "text-destructive")}>{value}</div>
+      <div
+        className={cn(
+          "text-2xl font-semibold",
+          tone === "danger" && "text-destructive",
+        )}
+      >
+        {value}
+      </div>
     </div>
   );
 }

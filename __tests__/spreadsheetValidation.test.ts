@@ -1,5 +1,3 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { parseSpreadsheetCsv } from "@/lib/spreadsheet-validation/csv";
@@ -12,7 +10,10 @@ import {
 
 describe("parseSpreadsheetCsv", () => {
   it("deve ler o CSV de exemplo com as colunas esperadas", () => {
-    const csv = readFileSync(resolve(process.cwd(), "ativa.csv"), "utf8");
+    const csv = [
+      "email;cnpjDoc",
+      "teste@exemplo.com;12.345.678/0001-90",
+    ].join("\n");
     const result = parseSpreadsheetCsv(csv);
 
     expect(result.missingColumns).toEqual([]);

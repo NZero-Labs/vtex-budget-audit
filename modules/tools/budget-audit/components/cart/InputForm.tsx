@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
 /**
  * Formulário de entrada - Design System Amara NZero
  */
 
-import { useState, FormEvent } from 'react';
-import { Button } from '../shared/audit-button';
-import { Card } from '../shared/audit-card';
+import { useState, FormEvent } from "react";
+import { Button } from "../shared/audit-button";
+import { Card } from "../shared/audit-card";
 
 interface InputFormProps {
   onSubmit: (data: { orderFormUrl: string; idBudget: string }) => void;
@@ -14,19 +14,22 @@ interface InputFormProps {
 }
 
 export function InputForm({ onSubmit, isLoading }: InputFormProps) {
-  const [orderFormUrl, setOrderFormUrl] = useState('');
-  const [idBudget, setIdBudget] = useState('');
-  const [errors, setErrors] = useState<{ orderFormUrl?: string; idBudget?: string }>({});
+  const [orderFormUrl, setOrderFormUrl] = useState("");
+  const [idBudget, setIdBudget] = useState("");
+  const [errors, setErrors] = useState<{
+    orderFormUrl?: string;
+    idBudget?: string;
+  }>({});
 
   const validate = (): boolean => {
     const newErrors: typeof errors = {};
 
     if (!orderFormUrl.trim()) {
-      newErrors.orderFormUrl = 'URL do carrinho é obrigatória';
+      newErrors.orderFormUrl = "URL do carrinho é obrigatória";
     }
 
     if (!idBudget.trim()) {
-      newErrors.idBudget = 'ID do orçamento é obrigatório';
+      newErrors.idBudget = "ID do orçamento é obrigatório";
     }
 
     setErrors(newErrors);
@@ -36,17 +39,23 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (validate()) {
-      onSubmit({ orderFormUrl: orderFormUrl.trim(), idBudget: idBudget.trim() });
+      onSubmit({
+        orderFormUrl: orderFormUrl.trim(),
+        idBudget: idBudget.trim(),
+      });
     }
   };
 
   return (
-    <Card title="Dados para Comparação" subtitle="Informe a URL do carrinho VTEX e o ID do orçamento">
+    <Card
+      title="Dados para Comparação"
+      subtitle="Informe a URL do carrinho VTEX e o ID do orçamento"
+    >
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* URL do Carrinho */}
         <div>
-          <label 
-            htmlFor="orderFormUrl" 
+          <label
+            htmlFor="orderFormUrl"
             className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2"
           >
             URL do Carrinho / OrderFormId
@@ -63,13 +72,17 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
               text-gray-900 dark:text-white
               placeholder-gray-400 dark:placeholder-gray-500
               focus:outline-none focus:ring-2 focus:ring-green-main
-              ${errors.orderFormUrl 
-                ? 'border-status-error focus:ring-status-error' 
-                : 'border-gray-300 dark:border-gray-600'}
+              ${
+                errors.orderFormUrl
+                  ? "border-status-error focus:ring-status-error"
+                  : "border-gray-300 dark:border-gray-600"
+              }
             `}
           />
           {errors.orderFormUrl && (
-            <p className="mt-2 text-sm font-medium text-status-error">{errors.orderFormUrl}</p>
+            <p className="mt-2 text-sm font-medium text-status-error">
+              {errors.orderFormUrl}
+            </p>
           )}
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Cole a URL completa do checkout ou apenas o orderFormId
@@ -78,8 +91,8 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
 
         {/* ID do Orçamento */}
         <div>
-          <label 
-            htmlFor="idBudget" 
+          <label
+            htmlFor="idBudget"
             className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2"
           >
             ID do Orçamento
@@ -96,13 +109,17 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
               text-gray-900 dark:text-white
               placeholder-gray-400 dark:placeholder-gray-500
               focus:outline-none focus:ring-2 focus:ring-green-main
-              ${errors.idBudget 
-                ? 'border-status-error focus:ring-status-error' 
-                : 'border-gray-300 dark:border-gray-600'}
+              ${
+                errors.idBudget
+                  ? "border-status-error focus:ring-status-error"
+                  : "border-gray-300 dark:border-gray-600"
+              }
             `}
           />
           {errors.idBudget && (
-            <p className="mt-2 text-sm font-medium text-status-error">{errors.idBudget}</p>
+            <p className="mt-2 text-sm font-medium text-status-error">
+              {errors.idBudget}
+            </p>
           )}
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             ID do orçamento armazenado no Master Data
@@ -111,13 +128,13 @@ export function InputForm({ onSubmit, isLoading }: InputFormProps) {
 
         {/* Botão Submit */}
         <div className="pt-4">
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             isLoading={isLoading}
             className="w-full"
             size="lg"
           >
-            {isLoading ? 'Comparando...' : 'Comparar'}
+            {isLoading ? "Comparando..." : "Comparar"}
           </Button>
         </div>
       </form>

@@ -128,24 +128,52 @@ export default function AdminPage() {
     <div className="mx-auto w-full max-w-7xl space-y-6">
       <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-              Gerenciar Usuários
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Adicione, edite ou desative usuários do sistema
-            </p>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            Gerenciar Usuários
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Adicione, edite ou desative usuários do sistema
+          </p>
         </div>
-        <Button className="w-full sm:w-auto" onClick={handleCreate}><UserPlus /> Novo usuário</Button>
+        <Button className="w-full sm:w-auto" onClick={handleCreate}>
+          <UserPlus /> Novo usuário
+        </Button>
       </div>
 
       {/* Erro */}
       {error && (
-        <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       {/* Estatísticas */}
       <div className="grid min-w-0 grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
-        {[{label:"Total de usuários",value:users.length,icon:Users},{label:"Usuários ativos",value:users.filter((u)=>u.isActive).length,icon:UserCheck},{label:"Administradores",value:users.filter((u)=>u.role==="ADMIN").length,icon:ShieldCheck}].map((item)=><Card key={item.label}><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{item.label}</CardTitle><item.icon className="size-4 text-primary" /></CardHeader><CardContent><div className="text-3xl font-semibold">{item.value}</div></CardContent></Card>)}
+        {[
+          { label: "Total de usuários", value: users.length, icon: Users },
+          {
+            label: "Usuários ativos",
+            value: users.filter((u) => u.isActive).length,
+            icon: UserCheck,
+          },
+          {
+            label: "Administradores",
+            value: users.filter((u) => u.role === "ADMIN").length,
+            icon: ShieldCheck,
+          },
+        ].map((item) => (
+          <Card key={item.label}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {item.label}
+              </CardTitle>
+              <item.icon className="size-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-semibold">{item.value}</div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Tabela de usuários */}

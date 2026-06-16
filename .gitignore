@@ -100,6 +100,7 @@ logs/
 ehthumbs.db
 Thumbs.db
 Desktop.ini
+migrations/
 
 # -----------------------------------------------------------------------------
 # Vercel & Deploy

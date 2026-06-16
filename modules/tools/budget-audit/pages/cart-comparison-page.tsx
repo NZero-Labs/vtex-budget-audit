@@ -140,10 +140,18 @@ export default function ComparePage() {
 
         {viewState === "result" && (
           <div className="grid w-full gap-2 sm:flex sm:w-auto sm:shrink-0">
-            <Button className="w-full sm:w-auto" variant="outline" onClick={handleExportCSV}>
+            <Button
+              className="w-full sm:w-auto"
+              variant="outline"
+              onClick={handleExportCSV}
+            >
               Exportar CSV
             </Button>
-            <Button className="w-full sm:w-auto" variant="secondary" onClick={handleReset}>
+            <Button
+              className="w-full sm:w-auto"
+              variant="secondary"
+              onClick={handleReset}
+            >
               Nova Comparação
             </Button>
           </div>

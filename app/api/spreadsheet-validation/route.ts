@@ -1,7 +1,11 @@
 import { randomUUID } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth";
-import { parseSpreadsheetCsv, processSpreadsheetRows } from "@/lib/spreadsheet-validation";
+import {
+  parseSpreadsheetCsv,
+  processSpreadsheetRows,
+  type SpreadsheetRow,
+} from "@/lib/spreadsheet-validation";
 import { createVTEXIntegratorClient } from "@/lib/vtex/integrators";
 
 export const runtime = "nodejs";
@@ -16,38 +20,85 @@ export async function POST(request: NextRequest) {
   }
 
   const requestId = `req_sheet_${randomUUID()}`;
-  const formData = await request.formData().catch(() => null);
-  const file = formData?.get("file");
 
-  if (!(file instanceof File)) {
-    return NextResponse.json(
-      { error: "VALIDATION_ERROR", message: "Envie um arquivo CSV." },
-      { status: 400 },
-    );
-  }
-
-  const content = await file.text();
-  const parsed = parseSpreadsheetCsv(content);
-
-  if (parsed.missingColumns.length > 0) {
+  const formData = await readFormData(request);
+  if (!formData) {
     return NextResponse.json(
       {
-        error: "MISSING_COLUMNS",
-        message: `Colunas obrigatórias ausentes: ${parsed.missingColumns.join(", ")}`,
-        missingColumns: parsed.missingColumns,
+        error: "INVALID_FORM",
+        message: "Não foi possível ler o arquivo enviado.",
         requestId,
       },
       { status: 400 },
     );
   }
 
-  if (parsed.rows.length === 0) {
+  const file = formData.get("file");
+  if (!isUploadFile(file)) {
     return NextResponse.json(
-      { error: "EMPTY_FILE", message: "Nenhuma linha encontrada para processar.", requestId },
+      { error: "VALIDATION_ERROR", message: "Envie um arquivo CSV." },
       { status: 400 },
     );
   }
 
+  try {
+    const parsed = parseSpreadsheetCsv(await file.text());
+
+    if (parsed.missingColumns.length > 0) {
+      return NextResponse.json(
+        {
+          error: "MISSING_COLUMNS",
+          message: `Colunas obrigatórias ausentes: ${parsed.missingColumns.join(", ")}`,
+          missingColumns: parsed.missingColumns,
+          requestId,
+        },
+        { status: 400 },
+      );
+    }
+
+    if (parsed.rows.length === 0) {
+      return NextResponse.json(
+        {
+          error: "EMPTY_FILE",
+          message: "Nenhuma linha encontrada para processar.",
+          requestId,
+        },
+        { status: 400 },
+      );
+    }
+
+    return buildValidationStreamResponse(requestId, parsed.rows);
+  } catch (error) {
+    console.error(`[${requestId}] Erro ao preparar arquivo:`, error);
+    return NextResponse.json(
+      {
+        error: "INTERNAL_ERROR",
+        message: "Não foi possível preparar a planilha para processamento.",
+        requestId,
+      },
+      { status: 500 },
+    );
+  }
+}
+
+async function readFormData(request: NextRequest) {
+  try {
+    return await request.formData();
+  } catch {
+    return null;
+  }
+}
+
+function isUploadFile(value: FormDataEntryValue | null): value is File {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    "text" in value &&
+    typeof value.text === "function"
+  );
+}
+
+function buildValidationStreamResponse(requestId: string, rows: SpreadsheetRow[]) {
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -56,13 +107,15 @@ export async function POST(request: NextRequest) {
         controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`));
       };
 
-      const startedAt = new Date().toISOString();
-      console.log(`[${requestId}] Iniciando validação de planilha: ${parsed.rows.length} linhas`);
-      send({ type: "start", requestId, totalRows: parsed.rows.length, startedAt });
-
       try {
+        const startedAt = new Date().toISOString();
+        console.log(
+          `[${requestId}] Iniciando validação de planilha: ${rows.length} linhas`,
+        );
+        send({ type: "start", requestId, totalRows: rows.length, startedAt });
+
         const client = createVTEXIntegratorClient();
-        const result = await processSpreadsheetRows(parsed.rows, client, {
+        const result = await processSpreadsheetRows(rows, client, {
           requestId,
           concurrency: 5,
           onProgress(snapshot) {

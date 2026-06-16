@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 const labels: Record<string, string> = {
   tools: "Ferramentas",
@@ -23,7 +30,17 @@ export function AppBreadcrumb() {
           return (
             <BreadcrumbItem key={href} className="min-w-0">
               {index > 0 && <BreadcrumbSeparator />}
-              {last ? <BreadcrumbPage className="block max-w-[42vw] truncate sm:max-w-none">{labels[part] ?? part}</BreadcrumbPage> : <BreadcrumbLink asChild><Link className="hidden truncate sm:inline" href={href}>{labels[part] ?? part}</Link></BreadcrumbLink>}
+              {last ? (
+                <BreadcrumbPage className="block max-w-[42vw] truncate sm:max-w-none">
+                  {labels[part] ?? part}
+                </BreadcrumbPage>
+              ) : (
+                <BreadcrumbLink asChild>
+                  <Link className="hidden truncate sm:inline" href={href}>
+                    {labels[part] ?? part}
+                  </Link>
+                </BreadcrumbLink>
+              )}
             </BreadcrumbItem>
           );
         })}
