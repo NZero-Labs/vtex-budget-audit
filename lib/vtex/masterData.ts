@@ -1,4 +1,4 @@
-import { VTEXBudget } from '@/lib/compare/types';
+import { VTEXBudget, BudgetVersion } from '@/lib/compare/types';
 import { getVTEXConfig, getVTEXBaseUrl, getVTEXHeaders, isMockMode } from './config';
 import { mockBudget } from './mocks';
 
@@ -166,4 +166,104 @@ export async function listBudgets(
   const total = totalMatch ? parseInt(totalMatch[1], 10) : data.length;
 
   return { data, total };
+}
+
+/**
+ * Lista todas as versões de um documento de orçamento no Master Data
+ * 
+ * Endpoint: GET /api/dataentities/{entity}/documents/{id}/versions
+ * Documentação: https://developers.vtex.com/docs/api-reference/master-data-api-v2#get-/api/dataentities/-dataEntityName-/documents/-id-/versions
+ * 
+ * @param documentId ID do documento no Master Data (campo `id`, não `idBudget`)
+ * @returns Lista de versões com metadados
+ * @throws Error se falhar a requisição
+ */
+export async function getBudgetVersions(documentId: string): Promise<BudgetVersion[]> {
+  if (isMockMode()) {
+    console.log('[MOCK] Retornando versões mockadas');
+    return [
+      { id: 'v1-mock', author: 'mock@vtex.com', date: new Date(Date.now() - 86400000 * 2).toISOString() },
+      { id: 'v2-mock', author: 'mock@vtex.com', date: new Date(Date.now() - 86400000).toISOString() },
+    ];
+  }
+
+  const config = getVTEXConfig();
+  const baseUrl = getVTEXBaseUrl(config);
+  const headers = getVTEXHeaders(config);
+  const entity = config.masterDataEntity;
+
+  const url = `${baseUrl}/api/dataentities/${entity}/documents/${documentId}/versions`;
+
+  console.log(`[VTEX] Listando versões do documento ${documentId}`);
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[VTEX] Erro ao listar versões: ${response.status}`, errorText);
+
+    if (response.status === 404) {
+      throw new Error(`Documento não encontrado: ${documentId}`);
+    }
+
+    throw new Error(`Erro ao listar versões: ${response.status} - ${errorText}`);
+  }
+
+  const versions: BudgetVersion[] = await response.json();
+
+  console.log(`[VTEX] ${versions.length} versão(ões) encontrada(s) para documento ${documentId}`);
+
+  return versions;
+}
+
+/**
+ * Obtém uma versão específica de um documento de orçamento
+ * 
+ * Endpoint: GET /api/dataentities/{entity}/documents/{id}/versions/{versionId}
+ * Documentação: https://developers.vtex.com/docs/api-reference/master-data-api-v2#get-/api/dataentities/-dataEntityName-/documents/-id-/versions/-versionId-
+ * 
+ * @param documentId ID do documento no Master Data (campo `id`)
+ * @param versionId ID da versão a ser obtida
+ * @returns Dados do orçamento naquela versão
+ * @throws Error se não encontrar ou falhar
+ */
+export async function getBudgetVersion(documentId: string, versionId: string): Promise<VTEXBudget> {
+  if (isMockMode()) {
+    console.log(`[MOCK] Retornando Budget mockado para versão ${versionId}`);
+    return { ...mockBudget, id: documentId };
+  }
+
+  const config = getVTEXConfig();
+  const baseUrl = getVTEXBaseUrl(config);
+  const headers = getVTEXHeaders(config);
+  const entity = config.masterDataEntity;
+
+  const url = `${baseUrl}/api/dataentities/${entity}/documents/${documentId}/versions/${versionId}`;
+
+  console.log(`[VTEX] Buscando versão ${versionId} do documento ${documentId}`);
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[VTEX] Erro ao buscar versão: ${response.status}`, errorText);
+
+    if (response.status === 404) {
+      throw new Error(`Versão ${versionId} não encontrada para documento ${documentId}`);
+    }
+
+    throw new Error(`Erro ao buscar versão: ${response.status} - ${errorText}`);
+  }
+
+  const budget: VTEXBudget = await response.json();
+
+  console.log(`[VTEX] Versão ${versionId} obtida: ${budget.items?.length || 0} itens`);
+
+  return budget;
 }

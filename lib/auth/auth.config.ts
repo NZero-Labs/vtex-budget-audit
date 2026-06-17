@@ -12,7 +12,7 @@ import type { NextAuthConfig } from 'next-auth';
 /**
  * Rotas protegidas que requerem autenticação
  */
-const protectedRoutes = ['/compare', '/compare-budgets', '/admin', '/home'];
+const protectedRoutes = ['/compare', '/compare-budgets', '/compare-versions', '/admin', '/home'];
 
 /**
  * Rotas que requerem role ADMIN

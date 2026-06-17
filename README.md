@@ -8,6 +8,7 @@ Esta aplicação permite:
 
 - **Comparar Orçamento vs Carrinho**: Verificar se um carrinho VTEX está alinhado com o orçamento
 - **Comparar Orçamento vs Orçamento**: Comparar dois orçamentos para identificar diferenças de preço e peso
+- **Comparar Orçamento vs Versões**: Comparar a versão atual de um orçamento com versões anteriores (histórico Master Data)
 - Identificar divergências de itens, preços, quantidades, promoções e frete
 - Visualizar peso individual de cada item e peso total do orçamento
 - Entender qual orçamento é mais caro e por quê
@@ -285,6 +286,27 @@ Após o login, você será direcionado para a página de seleção (`/home`) ond
 
 4. **Exporte se necessário:** Clique em "Exportar CSV" para download
 
+### Comparar Orçamento vs Versões (`/compare-versions`)
+
+1. **Informe o ID do orçamento:**
+   - **ID do Orçamento**: ID do orçamento que deseja verificar o histórico
+
+2. **Clique em Buscar Versões**
+
+3. **Selecione a versão:**
+   - A versão atual é exibida como referência
+   - Escolha uma versão anterior da lista para comparar
+
+4. **Analise os resultados:**
+   - Cards de resumo com totais (versão atual vs versão anterior)
+   - **Peso total** de cada versão
+   - **Análise de preço** explicando diferenças entre versões
+   - Tabela de itens com diferenças
+   - Seção de promoções
+   - Legenda de criticidade
+
+5. **Exporte se necessário:** Clique em "Exportar CSV" para download
+
 ## Estrutura do Projeto
 
 ```
@@ -309,11 +331,18 @@ vtex-budget-audit/
 │   │       ├── BudgetDiffTable.tsx
 │   │       ├── WeightSummary.tsx
 │   │       └── PriceBreakdown.tsx
+│   ├── compare-versions/
+│   │   ├── page.tsx              # Orçamento vs Versões
+│   │   └── components/           # Componentes da página
+│   │       ├── VersionInputForm.tsx
+│   │       └── VersionSelector.tsx
 │   ├── api/
 │   │   ├── compare/
 │   │   │   └── route.ts          # API Orçamento vs Carrinho
-│   │   └── compare-budgets/
-│   │       └── route.ts          # API Orçamento vs Orçamento
+│   │   ├── compare-budgets/
+│   │   │   └── route.ts          # API Orçamento vs Orçamento
+│   │   └── compare-versions/
+│   │       └── route.ts          # API Orçamento vs Versões
 │   ├── layout.tsx
 │   └── page.tsx                  # Redireciona para /home
 ├── lib/

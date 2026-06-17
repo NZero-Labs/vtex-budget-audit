@@ -9,6 +9,28 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Added
 
+- **Comparação Orçamento vs Versões**: Nova funcionalidade para comparar a versão atual de um orçamento com versões anteriores
+  - Nova página `/compare-versions` com formulário de entrada e seleção de versão
+  - Componentes: `VersionInputForm`, `VersionSelector`
+  - API route `/api/compare-versions` com ações `list-versions` e `compare`
+  - Funções `getBudgetVersions` e `getBudgetVersion` em `lib/vtex/masterData.ts`
+  - Nova tipagem `BudgetVersion` em `lib/compare/types.ts`
+  - Integração com API de versões do Master Data v2
+- **Card de Orçamento vs Versões na Home**: Terceiro card com ícone de histórico na página de seleção
+- **Botão Voltar em /compare**: Adicionado link de retorno ao `/home` no header (já existia em `/compare-budgets`)
+- **Rota protegida**: `/compare-versions` adicionada à lista de rotas protegidas
+
+### Changed
+
+- Home page expandida para 3 colunas (`md:grid-cols-3`) com `max-w-6xl`
+- Design system estendido com cor `purple` para o card de versões
+
+---
+
+## [Previous Unreleased]
+
+### Added
+
 - **Comparação Budget vs Budget**: Nova funcionalidade para comparar dois orçamentos
   - Nova página `/compare-budgets` com formulário para dois IDs de orçamento
   - Componentes: `BudgetInputForm`, `BudgetComparisonSummary`, `BudgetDiffTable`, `WeightSummary`, `PriceBreakdown`

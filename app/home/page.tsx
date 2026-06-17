@@ -15,7 +15,7 @@ interface SelectionCardProps {
   description: string;
   href: string;
   icon: React.ReactNode;
-  accentColor: 'green' | 'cyan';
+  accentColor: 'green' | 'cyan' | 'purple';
 }
 
 function SelectionCard({ title, description, href, icon, accentColor }: SelectionCardProps) {
@@ -31,6 +31,12 @@ function SelectionCard({ title, description, href, icon, accentColor }: Selectio
       iconBg: 'bg-brand-cyan/10',
       iconColor: 'text-brand-cyan',
       button: 'bg-brand-cyan hover:bg-brand-cyan/80',
+    },
+    purple: {
+      border: 'hover:border-purple-500',
+      iconBg: 'bg-purple-500/10',
+      iconColor: 'text-purple-500',
+      button: 'bg-purple-500 hover:bg-purple-600',
     },
   };
 
@@ -110,9 +116,20 @@ function ScaleIcon() {
   );
 }
 
+/**
+ * Ícone de histórico/versões
+ */
+function HistoryIcon() {
+  return (
+    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
 export default function HomePage() {
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
@@ -125,7 +142,7 @@ export default function HomePage() {
       </div>
 
       {/* Cards de seleção */}
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-3 gap-8">
         {/* Orçamento vs Carrinho */}
         <SelectionCard
           title="Orçamento vs Carrinho"
@@ -142,6 +159,15 @@ export default function HomePage() {
           href="/compare-budgets"
           icon={<ScaleIcon />}
           accentColor="cyan"
+        />
+
+        {/* Orçamento vs Versões */}
+        <SelectionCard
+          title="Orçamento vs Versões"
+          description="Compare a versão atual de um orçamento com versões anteriores para identificar alterações ao longo do tempo."
+          href="/compare-versions"
+          icon={<HistoryIcon />}
+          accentColor="purple"
         />
       </div>
 

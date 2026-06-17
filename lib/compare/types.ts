@@ -815,3 +815,20 @@ export interface CompareBudgetsRequest {
   /** ID do segundo orçamento */
   idBudget2: string | number;
 }
+
+// =============================================================================
+// Tipos para Versionamento de Budget (Master Data v2)
+// =============================================================================
+
+/**
+ * Metadados de uma versão de documento no Master Data v2
+ * Retornado por GET /api/dataentities/{entity}/documents/{id}/versions
+ */
+export interface BudgetVersion {
+  /** ID da versão */
+  id: string;
+  /** Autor da modificação */
+  author: string;
+  /** Data da versão (ISO timestamp) */
+  date: string;
+}
