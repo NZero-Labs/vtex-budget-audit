@@ -182,12 +182,23 @@ async function handleCompare(
     const currentBudget = currentResult.value;
     const versionBudget = versionResult.value;
 
+    console.log(`[${requestId}] Budget atual obtido - id: ${currentBudget.id}, items: ${currentBudget.items?.length || 0}`);
+    console.log(`[${requestId}] Versão obtida - id: ${versionBudget.id}, items: ${versionBudget.items?.length || 0}`);
+
     if (!versionBudget.items) {
+      console.warn(`[${requestId}] versionBudget.items é undefined/null, usando array vazio`);
       versionBudget.items = [];
     }
 
+    if (!currentBudget.items) {
+      console.warn(`[${requestId}] currentBudget.items é undefined/null, usando array vazio`);
+      currentBudget.items = [];
+    }
+
+    console.log(`[${requestId}] Normalizando budgets...`);
     const normalizedCurrent = normalizeBudget(currentBudget);
     const normalizedVersion = normalizeBudget(versionBudget);
+    console.log(`[${requestId}] Normalização OK - atual: ${normalizedCurrent.items.length} itens, versão: ${normalizedVersion.items.length} itens`);
 
     const allSkuIds = [
       ...normalizedCurrent.items.map(item => item.skuId),
