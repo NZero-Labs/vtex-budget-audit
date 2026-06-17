@@ -79,7 +79,28 @@ export default function CompareVersionsPage() {
         }),
       });
 
-      const json = await response.json();
+      const text = await response.text();
+      if (!text) {
+        setError({
+          error: 'EMPTY_RESPONSE',
+          message: 'O servidor retornou uma resposta vazia. A comparação pode ter excedido o tempo limite.',
+        });
+        setViewState('error');
+        return;
+      }
+
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        setError({
+          error: 'INVALID_RESPONSE',
+          message: 'Resposta inválida do servidor.',
+          details: text.slice(0, 500),
+        });
+        setViewState('error');
+        return;
+      }
 
       if (!response.ok) {
         setError(json as ApiError);

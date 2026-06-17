@@ -261,7 +261,21 @@ export async function getBudgetVersion(documentId: string, versionId: string): P
     throw new Error(`Erro ao buscar versão: ${response.status} - ${errorText}`);
   }
 
-  const budget: VTEXBudget = await response.json();
+  const responseText = await response.text();
+
+  if (!responseText) {
+    throw new Error(`Resposta vazia da API de versões para documento ${documentId}, versão ${versionId}`);
+  }
+
+  let rawData: unknown;
+  try {
+    rawData = JSON.parse(responseText);
+  } catch {
+    console.error(`[VTEX] Resposta não-JSON da API de versões:`, responseText.slice(0, 500));
+    throw new Error(`Resposta inválida da API de versões: não é JSON válido`);
+  }
+
+  const budget = rawData as VTEXBudget;
 
   console.log(`[VTEX] Versão ${versionId} obtida: ${budget.items?.length || 0} itens`);
 

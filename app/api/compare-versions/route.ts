@@ -18,6 +18,9 @@ import { normalizeBudget } from '@/lib/compare/normalizers';
 import { compareBudgets } from '@/lib/compare/budgetCompare';
 import { BudgetComparisonResult, BudgetVersion, ApiError } from '@/lib/compare/types';
 
+export const runtime = 'nodejs';
+export const maxDuration = 30;
+
 const ListVersionsSchema = z.object({
   action: z.literal('list-versions'),
   idBudget: z.union([z.string(), z.number()]).transform(String),
@@ -144,70 +147,88 @@ async function handleCompare(
 ): Promise<NextResponse<BudgetComparisonResult | ApiError>> {
   console.log(`[${requestId}] Comparando versão atual com versão ${versionId}...`);
 
-  const [currentResult, versionResult] = await Promise.allSettled([
-    getBudget(idBudget),
-    getBudgetVersion(documentId, versionId),
-  ]);
+  try {
+    const [currentResult, versionResult] = await Promise.allSettled([
+      getBudget(idBudget),
+      getBudgetVersion(documentId, versionId),
+    ]);
 
-  if (currentResult.status === 'rejected') {
+    if (currentResult.status === 'rejected') {
+      return NextResponse.json<ApiError>(
+        {
+          error: 'CURRENT_BUDGET_ERROR',
+          message: currentResult.reason instanceof Error
+            ? currentResult.reason.message
+            : 'Não foi possível buscar o orçamento atual',
+          requestId,
+        },
+        { status: 404 }
+      );
+    }
+
+    if (versionResult.status === 'rejected') {
+      return NextResponse.json<ApiError>(
+        {
+          error: 'VERSION_NOT_FOUND',
+          message: versionResult.reason instanceof Error
+            ? versionResult.reason.message
+            : `Versão ${versionId} não encontrada`,
+          requestId,
+        },
+        { status: 404 }
+      );
+    }
+
+    const currentBudget = currentResult.value;
+    const versionBudget = versionResult.value;
+
+    if (!versionBudget.items) {
+      versionBudget.items = [];
+    }
+
+    const normalizedCurrent = normalizeBudget(currentBudget);
+    const normalizedVersion = normalizeBudget(versionBudget);
+
+    const allSkuIds = [
+      ...normalizedCurrent.items.map(item => item.skuId),
+      ...normalizedVersion.items.map(item => item.skuId),
+    ];
+    const uniqueSkuIds = [...new Set(allSkuIds)];
+
+    const skuDetailsMap = await getMultipleSkuDetails(uniqueSkuIds);
+    const skuWeights = createWeightMap(skuDetailsMap);
+
+    const metadata = {
+      budget1Id: `${idBudget} (atual)`,
+      budget2Id: `${idBudget} (versão ${versionId})`,
+      comparedAt: new Date().toISOString(),
+      requestId,
+    };
+
+    const result = compareBudgets(
+      normalizedCurrent,
+      normalizedVersion,
+      skuWeights,
+      metadata
+    );
+
+    const duration = Date.now() - startTime;
+    console.log(`[${requestId}] Comparação de versões concluída em ${duration}ms - ${result.summary.totalDiffs} divergências`);
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error(`[${requestId}] Erro na comparação de versões:`, error);
+
     return NextResponse.json<ApiError>(
       {
-        error: 'CURRENT_BUDGET_ERROR',
-        message: currentResult.reason instanceof Error
-          ? currentResult.reason.message
-          : 'Não foi possível buscar o orçamento atual',
+        error: 'COMPARE_ERROR',
+        message: 'Erro ao processar comparação de versões',
+        details: error instanceof Error ? error.message : 'Erro desconhecido',
         requestId,
       },
-      { status: 404 }
+      { status: 500 }
     );
   }
-
-  if (versionResult.status === 'rejected') {
-    return NextResponse.json<ApiError>(
-      {
-        error: 'VERSION_NOT_FOUND',
-        message: versionResult.reason instanceof Error
-          ? versionResult.reason.message
-          : `Versão ${versionId} não encontrada`,
-        requestId,
-      },
-      { status: 404 }
-    );
-  }
-
-  const currentBudget = currentResult.value;
-  const versionBudget = versionResult.value;
-
-  const normalizedCurrent = normalizeBudget(currentBudget);
-  const normalizedVersion = normalizeBudget(versionBudget);
-
-  const allSkuIds = [
-    ...normalizedCurrent.items.map(item => item.skuId),
-    ...normalizedVersion.items.map(item => item.skuId),
-  ];
-  const uniqueSkuIds = [...new Set(allSkuIds)];
-
-  const skuDetailsMap = await getMultipleSkuDetails(uniqueSkuIds);
-  const skuWeights = createWeightMap(skuDetailsMap);
-
-  const metadata = {
-    budget1Id: `${idBudget} (atual)`,
-    budget2Id: `${idBudget} (versão ${versionId})`,
-    comparedAt: new Date().toISOString(),
-    requestId,
-  };
-
-  const result = compareBudgets(
-    normalizedCurrent,
-    normalizedVersion,
-    skuWeights,
-    metadata
-  );
-
-  const duration = Date.now() - startTime;
-  console.log(`[${requestId}] Comparação de versões concluída em ${duration}ms - ${result.summary.totalDiffs} divergências`);
-
-  return NextResponse.json(result);
 }
 
 export async function OPTIONS(): Promise<NextResponse> {
