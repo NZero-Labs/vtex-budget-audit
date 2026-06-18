@@ -53,7 +53,6 @@ export async function POST(
   request: NextRequest
 ): Promise<NextResponse<ListVersionsResponse | BudgetComparisonResult | ApiError>> {
   const requestId = generateRequestId();
-  const startTime = Date.now();
 
   try {
     const body = await request.json().catch(() => ({}));
@@ -77,7 +76,7 @@ export async function POST(
       return handleListVersions(data.idBudget, requestId);
     }
 
-    return handleCompare(data.documentId, data.versionId, data.idBudget, requestId, startTime);
+    return handleCompare(data.documentId, data.versionId, data.idBudget, requestId);
   } catch (error) {
     console.error(`[${requestId}] Erro inesperado:`, error);
 
@@ -97,8 +96,6 @@ async function handleListVersions(
   idBudget: string,
   requestId: string
 ): Promise<NextResponse<ListVersionsResponse | ApiError>> {
-  console.log(`[${requestId}] Listando versões para idBudget=${idBudget}...`);
-
   let budget;
   try {
     budget = await getBudget(idBudget);
@@ -117,8 +114,6 @@ async function handleListVersions(
 
   try {
     const versions = await getBudgetVersions(documentId);
-
-    console.log(`[${requestId}] ${versions.length} versão(ões) encontrada(s)`);
 
     return NextResponse.json<ListVersionsResponse>({
       documentId,
@@ -142,11 +137,8 @@ async function handleCompare(
   documentId: string,
   versionId: string,
   idBudget: string,
-  requestId: string,
-  startTime: number
+  requestId: string
 ): Promise<NextResponse<BudgetComparisonResult | ApiError>> {
-  console.log(`[${requestId}] Comparando versão atual com versão ${versionId}...`);
-
   try {
     const [currentResult, versionResult] = await Promise.allSettled([
       getBudget(idBudget),
@@ -182,23 +174,16 @@ async function handleCompare(
     const currentBudget = currentResult.value;
     const versionBudget = versionResult.value;
 
-    console.log(`[${requestId}] Budget atual obtido - id: ${currentBudget.id}, items: ${currentBudget.items?.length || 0}`);
-    console.log(`[${requestId}] Versão obtida - id: ${versionBudget.id}, items: ${versionBudget.items?.length || 0}`);
-
     if (!versionBudget.items) {
-      console.warn(`[${requestId}] versionBudget.items é undefined/null, usando array vazio`);
       versionBudget.items = [];
     }
 
     if (!currentBudget.items) {
-      console.warn(`[${requestId}] currentBudget.items é undefined/null, usando array vazio`);
       currentBudget.items = [];
     }
 
-    console.log(`[${requestId}] Normalizando budgets...`);
     const normalizedCurrent = normalizeBudget(currentBudget);
     const normalizedVersion = normalizeBudget(versionBudget);
-    console.log(`[${requestId}] Normalização OK - atual: ${normalizedCurrent.items.length} itens, versão: ${normalizedVersion.items.length} itens`);
 
     const allSkuIds = [
       ...normalizedCurrent.items.map(item => item.skuId),
@@ -222,9 +207,6 @@ async function handleCompare(
       skuWeights,
       metadata
     );
-
-    const duration = Date.now() - startTime;
-    console.log(`[${requestId}] Comparação de versões concluída em ${duration}ms - ${result.summary.totalDiffs} divergências`);
 
     return NextResponse.json(result);
   } catch (error) {

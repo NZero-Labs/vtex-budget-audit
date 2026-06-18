@@ -180,7 +180,6 @@ export async function listBudgets(
  */
 export async function getBudgetVersions(documentId: string): Promise<BudgetVersion[]> {
   if (isMockMode()) {
-    console.log('[MOCK] Retornando versões mockadas');
     return [
       { id: 'v1-mock', author: 'mock@vtex.com', date: new Date(Date.now() - 86400000 * 2).toISOString() },
       { id: 'v2-mock', author: 'mock@vtex.com', date: new Date(Date.now() - 86400000).toISOString() },
@@ -194,25 +193,14 @@ export async function getBudgetVersions(documentId: string): Promise<BudgetVersi
 
   const url = `${baseUrl}/api/dataentities/${entity}/documents/${documentId}/versions`;
 
-  console.log(`[VTEX:versions] ========== LIST VERSIONS ==========`);
-  console.log(`[VTEX:versions] URL: ${url}`);
-  console.log(`[VTEX:versions] Entity: ${entity}`);
-  console.log(`[VTEX:versions] Document ID: ${documentId}`);
-
   const response = await fetch(url, {
     method: 'GET',
     headers,
   });
 
-  console.log(`[VTEX:versions] Response Status: ${response.status}`);
-  console.log(`[VTEX:versions] Response Headers:`, Object.fromEntries(response.headers.entries()));
-
   const responseText = await response.text();
-  console.log(`[VTEX:versions] Response Body (raw):`, responseText.slice(0, 2000));
 
   if (!response.ok) {
-    console.error(`[VTEX:versions] ERRO: ${response.status}`, responseText);
-
     if (response.status === 404) {
       throw new Error(`Documento não encontrado: ${documentId}`);
     }
@@ -221,7 +209,6 @@ export async function getBudgetVersions(documentId: string): Promise<BudgetVersi
   }
 
   if (!responseText) {
-    console.warn(`[VTEX:versions] Resposta vazia - retornando array vazio`);
     return [];
   }
 
@@ -229,12 +216,8 @@ export async function getBudgetVersions(documentId: string): Promise<BudgetVersi
   try {
     versions = JSON.parse(responseText);
   } catch {
-    console.error(`[VTEX:versions] Falha ao parsear JSON:`, responseText.slice(0, 500));
     throw new Error(`Resposta inválida da API de versões: não é JSON válido`);
   }
-
-  console.log(`[VTEX:versions] Versões encontradas: ${versions.length}`);
-  console.log(`[VTEX:versions] Dados:`, JSON.stringify(versions, null, 2).slice(0, 1000));
 
   return versions;
 }
@@ -252,7 +235,6 @@ export async function getBudgetVersions(documentId: string): Promise<BudgetVersi
  */
 export async function getBudgetVersion(documentId: string, versionId: string): Promise<VTEXBudget> {
   if (isMockMode()) {
-    console.log(`[MOCK] Retornando Budget mockado para versão ${versionId}`);
     return { ...mockBudget, id: documentId };
   }
 
@@ -263,26 +245,14 @@ export async function getBudgetVersion(documentId: string, versionId: string): P
 
   const url = `${baseUrl}/api/dataentities/${entity}/documents/${documentId}/versions/${versionId}`;
 
-  console.log(`[VTEX:version] ========== GET VERSION ==========`);
-  console.log(`[VTEX:version] URL: ${url}`);
-  console.log(`[VTEX:version] Entity: ${entity}`);
-  console.log(`[VTEX:version] Document ID: ${documentId}`);
-  console.log(`[VTEX:version] Version ID: ${versionId}`);
-
   const response = await fetch(url, {
     method: 'GET',
     headers,
   });
 
-  console.log(`[VTEX:version] Response Status: ${response.status}`);
-  console.log(`[VTEX:version] Response Headers:`, Object.fromEntries(response.headers.entries()));
-
   const responseText = await response.text();
-  console.log(`[VTEX:version] Response Body (raw, first 3000 chars):`, responseText.slice(0, 3000));
 
   if (!response.ok) {
-    console.error(`[VTEX:version] ERRO: ${response.status}`, responseText);
-
     if (response.status === 404) {
       throw new Error(`Versão ${versionId} não encontrada para documento ${documentId}`);
     }
@@ -291,7 +261,6 @@ export async function getBudgetVersion(documentId: string, versionId: string): P
   }
 
   if (!responseText) {
-    console.error(`[VTEX:version] Resposta vazia!`);
     throw new Error(`Resposta vazia da API de versões para documento ${documentId}, versão ${versionId}`);
   }
 
@@ -299,21 +268,13 @@ export async function getBudgetVersion(documentId: string, versionId: string): P
   try {
     rawData = JSON.parse(responseText);
   } catch {
-    console.error(`[VTEX:version] Falha ao parsear JSON:`, responseText.slice(0, 500));
     throw new Error(`Resposta inválida da API de versões: não é JSON válido`);
   }
-
-  console.log(`[VTEX:version] Tipo do dado retornado: ${typeof rawData}`);
-  console.log(`[VTEX:version] Chaves do objeto:`, rawData && typeof rawData === 'object' ? Object.keys(rawData as object) : 'N/A');
 
   // A API de versões retorna um wrapper: { id, author, document: {...} }
   // O budget real está dentro do campo "document"
   const versionWrapper = rawData as { id: string; author: string; document: VTEXBudget };
   const budget: VTEXBudget = versionWrapper.document ?? (rawData as VTEXBudget);
-
-  console.log(`[VTEX:version] budget.id: ${budget.id}`);
-  console.log(`[VTEX:version] budget.items: ${budget.items ? `array com ${budget.items.length} itens` : 'undefined/null'}`);
-  console.log(`[VTEX:version] budget.totals: ${JSON.stringify(budget.totals)}`);
 
   return budget;
 }
