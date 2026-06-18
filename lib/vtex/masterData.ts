@@ -306,7 +306,10 @@ export async function getBudgetVersion(documentId: string, versionId: string): P
   console.log(`[VTEX:version] Tipo do dado retornado: ${typeof rawData}`);
   console.log(`[VTEX:version] Chaves do objeto:`, rawData && typeof rawData === 'object' ? Object.keys(rawData as object) : 'N/A');
 
-  const budget = rawData as VTEXBudget;
+  // A API de versões retorna um wrapper: { id, author, document: {...} }
+  // O budget real está dentro do campo "document"
+  const versionWrapper = rawData as { id: string; author: string; document: VTEXBudget };
+  const budget: VTEXBudget = versionWrapper.document ?? (rawData as VTEXBudget);
 
   console.log(`[VTEX:version] budget.id: ${budget.id}`);
   console.log(`[VTEX:version] budget.items: ${budget.items ? `array com ${budget.items.length} itens` : 'undefined/null'}`);
